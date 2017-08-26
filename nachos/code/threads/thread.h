@@ -79,6 +79,8 @@ class NachOSThread {
     // THEY MUST be in this position for SWITCH to work.
     int* stackTop;			 // the current stack pointer
     int machineState[MachineStateSize];  // all registers except for stackTop
+     
+    static int static_pid;
 
   public:
     NachOSThread(char* debugName);		// initialize a Thread 
@@ -98,6 +100,12 @@ class NachOSThread {
     
     void CheckOverflow();   			// Check if thread has 
 						// overflowed its stack
+
+    //------------ CUSTOM METHODS ------------
+    int GetPID() { return pid; } //To Get PID
+    int GetPPID() { return ppid; } //To Get PPID
+    //------------ CUSTOM METHODS ------------
+
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }

@@ -11,6 +11,7 @@
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
+int maxPID = 0;
 NachOSThread *currentThread;			// the thread we are running now
 NachOSThread *threadToBeDestroyed;  		// the thread that just finished
 ProcessScheduler *scheduler;			// the ready list

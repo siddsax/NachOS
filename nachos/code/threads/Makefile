@@ -18,150 +18,153 @@ include ../Makefile.dep
 #-----------------------------------------------------------------
 # DO NOT DELETE THIS LINE -- make depend uses it
 # DEPENDENCIES MUST END AT END OF FILE
-main.o: ../threads/main.cc ../threads/copyright.h ../threads/utility.h \
- ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/features.h /usr/include/stdc-predef.h \
+main.o: ../threads/main.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/utility.h ../machine/sysdep.h \
+ ../threads/copyright.h /usr/include/stdio.h /usr/include/features.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/system.h \
  ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
  ../machine/timer.h ../threads/utility.h
-list.o: ../threads/list.cc ../threads/copyright.h ../threads/list.h \
- ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/features.h /usr/include/stdc-predef.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+list.o: ../threads/list.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/list.h ../threads/utility.h \
+ ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h
-scheduler.o: ../threads/scheduler.cc ../threads/copyright.h \
- ../threads/scheduler.h ../threads/list.h ../threads/utility.h \
- ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/features.h /usr/include/stdc-predef.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+scheduler.o: ../threads/scheduler.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/scheduler.h ../threads/list.h \
+ ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
+ /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/thread.h \
  ../threads/system.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../threads/utility.h
-synch.o: ../threads/synch.cc ../threads/copyright.h ../threads/synch.h \
- ../threads/thread.h ../threads/utility.h ../machine/sysdep.h \
- ../threads/copyright.h /usr/include/stdio.h /usr/include/features.h \
- /usr/include/stdc-predef.h /usr/include/sys/cdefs.h \
+synch.o: ../threads/synch.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/synch.h ../threads/thread.h \
+ ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
+ /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/list.h \
  ../threads/system.h ../threads/scheduler.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h
-synchlist.o: ../threads/synchlist.cc ../threads/copyright.h \
- ../threads/synchlist.h ../threads/list.h ../threads/utility.h \
- ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
- /usr/include/features.h /usr/include/stdc-predef.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+synchlist.o: ../threads/synchlist.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/synchlist.h ../threads/list.h \
+ ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
+ /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/synch.h \
  ../threads/thread.h
-system.o: ../threads/system.cc ../threads/copyright.h ../threads/system.h \
- ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/features.h /usr/include/stdc-predef.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+system.o: ../threads/system.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/system.h ../threads/utility.h \
+ ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/thread.h \
  ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h
-thread.o: ../threads/thread.cc ../threads/copyright.h ../threads/thread.h \
- ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/features.h /usr/include/stdc-predef.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+thread.o: ../threads/thread.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
+ ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/switch.h \
  ../threads/synch.h ../threads/list.h ../threads/system.h \
  ../threads/scheduler.h ../machine/interrupt.h ../threads/list.h \
  ../machine/stats.h ../machine/timer.h ../threads/utility.h
-utility.o: ../threads/utility.cc ../threads/copyright.h \
- ../threads/utility.h ../machine/sysdep.h ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/features.h /usr/include/stdc-predef.h \
+utility.o: ../threads/utility.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/utility.h ../machine/sysdep.h \
+ ../threads/copyright.h /usr/include/stdio.h /usr/include/features.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h
-threadtest.o: ../threads/threadtest.cc ../threads/copyright.h \
- ../threads/system.h ../threads/utility.h ../machine/sysdep.h \
- ../threads/copyright.h /usr/include/stdio.h /usr/include/features.h \
- /usr/include/stdc-predef.h /usr/include/sys/cdefs.h \
+threadtest.o: ../threads/threadtest.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/system.h ../threads/utility.h \
+ ../machine/sysdep.h ../threads/copyright.h /usr/include/stdio.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
  /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
  /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/thread.h \
  ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h
-interrupt.o: ../machine/interrupt.cc ../threads/copyright.h \
- ../machine/interrupt.h ../threads/list.h ../threads/copyright.h \
- ../threads/utility.h ../machine/sysdep.h /usr/include/stdio.h \
- /usr/include/features.h /usr/include/stdc-predef.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+interrupt.o: ../machine/interrupt.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../machine/interrupt.h ../threads/list.h \
+ ../threads/copyright.h ../threads/utility.h ../machine/sysdep.h \
+ /usr/include/stdio.h /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/system.h \
  ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
  ../machine/interrupt.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h
-sysdep.o: ../machine/sysdep.cc ../threads/copyright.h \
- /usr/include/stdio.h /usr/include/features.h /usr/include/stdc-predef.h \
+sysdep.o: ../machine/sysdep.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h /usr/include/stdio.h /usr/include/features.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h /usr/include/signal.h \
  /usr/include/bits/sigset.h /usr/include/bits/signum.h \
@@ -195,26 +198,27 @@ sysdep.o: ../machine/sysdep.cc ../threads/copyright.h \
  ../threads/thread.h ../threads/scheduler.h ../threads/list.h \
  ../machine/interrupt.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h
-stats.o: ../machine/stats.cc ../threads/copyright.h ../threads/utility.h \
- ../threads/copyright.h ../machine/sysdep.h /usr/include/stdio.h \
- /usr/include/features.h /usr/include/stdc-predef.h \
+stats.o: ../machine/stats.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../threads/utility.h ../threads/copyright.h \
+ ../machine/sysdep.h /usr/include/stdio.h /usr/include/features.h \
  /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
  /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../machine/stats.h
-timer.o: ../machine/timer.cc ../threads/copyright.h ../machine/timer.h \
- ../threads/utility.h ../threads/copyright.h ../machine/sysdep.h \
- /usr/include/stdio.h /usr/include/features.h /usr/include/stdc-predef.h \
- /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h \
- /usr/include/gnu/stubs.h /usr/include/gnu/stubs-32.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stddef.h \
+timer.o: ../machine/timer.cc /usr/include/stdc-predef.h \
+ ../threads/copyright.h ../machine/timer.h ../threads/utility.h \
+ ../threads/copyright.h ../machine/sysdep.h /usr/include/stdio.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-32.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h \
  /usr/include/bits/types.h /usr/include/bits/typesizes.h \
  /usr/include/libio.h /usr/include/_G_config.h /usr/include/wchar.h \
- /usr/lib/gcc/x86_64-linux-gnu/4.7/include/stdarg.h \
+ /usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h \
  /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h \
  /usr/include/string.h /usr/include/xlocale.h ../threads/system.h \
  ../threads/utility.h ../threads/thread.h ../threads/scheduler.h \

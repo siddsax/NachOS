@@ -34,6 +34,14 @@
 
 NachOSThread::NachOSThread(char* threadName)
 {
+    pid = maxPID++;
+    if (currentThread == NULL) {
+        ppid = -1;
+    }
+    else {
+        ppid = currentThread -> GetPID();
+    }
+
     name = threadName;
     stackTop = NULL;
     stack = NULL;
@@ -144,7 +152,7 @@ NachOSThread::CheckOverflow()
 void
 NachOSThread::FinishThread ()
 {
-    (void) interrupt->SetLevel(IntOff);		
+    (void) interrupt->SetLevel(IntOff);
     ASSERT(this == currentThread);
     
     DEBUG('t', "Finishing thread \"%s\"\n", getName());
