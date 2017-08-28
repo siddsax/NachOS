@@ -12,6 +12,8 @@
 // These are all initialized and de-allocated by this file.
 
 int maxPID = 0;
+List *waitingThreadList = new List;
+
 NachOSThread *currentThread;			// the thread we are running now
 NachOSThread *threadToBeDestroyed;  		// the thread that just finished
 ProcessScheduler *scheduler;			// the ready list
@@ -42,6 +44,28 @@ bool initializedConsoleSemaphores;
 extern void Cleanup();
 
 
+static void
+restoreSleepingThreads()
+{
+    IntStatus oldLevel = interrupt->SetLevel(IntOff); //Disable Interrupts
+
+    int *currentWaitingThreadWakeTime;
+    NachOSThread *currentWaitingThread;
+    while ((currentWaitingThread = (NachOSThread *) waitingThreadList->SortedRemove(currentWaitingThreadWakeTime)) != NULL) {
+        if (*currentWaitingThreadWakeTime > stats->totalTicks) {
+            waitingThreadList->SortedInsert((void *) currentWaitingThread, *currentWaitingThreadWakeTime);
+            break;
+        }
+        else {
+            scheduler->MoveThreadToReadyQueue(currentWaitingThread);
+        }
+    }
+
+    (void) interrupt->SetLevel(oldLevel); //Restore interrupts to previous state
+
+}
+
+
 //----------------------------------------------------------------------
 // TimerInterruptHandler
 // 	Interrupt handler for the timer device.  The timer device is
@@ -64,6 +88,8 @@ TimerInterruptHandler(int dummy)
 {
     if (interrupt->getStatus() != IdleMode)
 	interrupt->YieldOnReturn();
+
+    restoreSleepingThreads();
 }
 
 //----------------------------------------------------------------------

@@ -162,7 +162,7 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
     else if ((which == SyscallException) && (type == SysCall_GetReg)) {
-        //Implemented By Siddhartha/Jaskirat
+        //Implemented By Siddhartha
 
         int reg_to_read = (unsigned)machine->ReadRegister(4);
         int value = (unsigned)machine->ReadRegister(reg_to_read);
@@ -176,7 +176,7 @@ void ExceptionHandler(ExceptionType which)
     }
 
     else if ((which == SyscallException) && (type == SysCall_GetPA)) {
-        //Implemented By Siddhartha/Jaskirat
+        //Implemented By Siddhartha
 
         int i;
         unsigned int virtualPageNumber, offset;
@@ -229,8 +229,8 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
     else if ((which == SyscallException) && (type == SysCall_GetPID)) {
-        //Implemented By Gurpreet/Shobhit
-        machine->WriteRegister(2, currentThread -> GetPID());
+        //Implemented By Gurpreet
+        machine->WriteRegister(2, currentThread->GetPID());
 
         // Advance program counters.
         machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
@@ -238,8 +238,8 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
     else if ((which == SyscallException) && (type == SysCall_GetPPID)) {
-        //Implemented By Gurpreet/Shobhit
-        machine->WriteRegister(2, currentThread -> GetPPID());  
+        //Implemented By Gurpreet
+        machine->WriteRegister(2, currentThread->GetPPID());  
 
         // Advance program counters.
         machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
@@ -247,8 +247,40 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
     else if ((which == SyscallException) && (type == SysCall_Time)) {
-        //Implemented By Gurpreet/Shobhit
-        machine->WriteRegister(2, stats -> totalTicks);
+        //Implemented By Gurpreet
+        machine->WriteRegister(2, stats->totalTicks);
+
+        // Advance program counters.
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
+    }
+    else if ((which == SyscallException) && (type == SysCall_Yield)) {
+        //Implemented By Shobhit
+        currentThread->YieldCPU();
+
+        // Advance program counters.
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
+    }
+    else if ((which == SyscallException) && (type == SysCall_Sleep)) {
+        //Implemented By Gurpreet
+        
+        int sleepTime = machine->ReadRegister(4); //Read the sleep time
+
+        if (sleepTime == 0) {
+            currentThread->YieldCPU(); //Yield if sleep time is zero
+        }
+        else {
+            IntStatus oldLevel = interrupt->SetLevel(IntOff); //Disable Interrupts
+
+            waitingThreadList->SortedInsert((void *) currentThread, stats->totalTicks + sleepTime); //Add thread to waiting queue restored on every interrupt
+            currentThread->PutThreadToSleep(); //Put the thread to sleep
+
+            (void) interrupt->SetLevel(oldLevel); //Restore interrupts to previous state
+        }
+
 
         // Advance program counters.
         machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));

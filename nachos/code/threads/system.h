@@ -23,6 +23,8 @@ extern void Cleanup();				// Cleanup, called when
 						// Nachos is done.
 
 extern int maxPID;
+extern List *waitingThreadList;
+
 extern NachOSThread *currentThread;			// the thread holding the CPU
 extern NachOSThread *threadToBeDestroyed;  		// the thread that just finished
 extern ProcessScheduler *scheduler;			// the thread scheduler
