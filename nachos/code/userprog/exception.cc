@@ -246,6 +246,17 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
+    else if ((which == SyscallException) && (type == SysCall_NumInstr)) {
+        //Implemented By Gurpreet
+        machine->WriteRegister(2, currentThread->numInstructions); //numInstructions is a defined field, being incremented in each tick of the Interrupt
+
+        //For each instruction executed (in code/machine/mipsim.cc) we call OneTick() of interrupt. Increment number of instructions per tick
+
+        // Advance program counters.
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
+    }
     else if ((which == SyscallException) && (type == SysCall_Time)) {
         //Implemented By Gurpreet
         machine->WriteRegister(2, stats->totalTicks);

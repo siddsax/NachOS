@@ -83,6 +83,8 @@ class NachOSThread {
     static int static_pid;
 
   public:
+    int numInstructions = 0;
+    
     NachOSThread(char* debugName);		// initialize a Thread 
     ~NachOSThread(); 				// deallocate a Thread
 					// NOTE -- thread being deleted
