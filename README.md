@@ -161,3 +161,6 @@ BLOCKED.
 
 Since we need to continue execution of the user program, we need to increment
 the program counter.
+### Exec system call
+*Syscall_Exec*
+<!-- TO BE FILLED BY JASKIRAT SINGH -->

@@ -298,6 +298,35 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
+    else if((which == SyscallException) && (type==SysCall_Exec)){
+        //IMPLEMENTED BY JASKIRAT SINGH
+        char fileaddress[100];
+        int i=0;
+        vaddr = machine->ReadRegister(4);
+        machine->ReadMem(vaddr,1,&memval);
+        while((char)memval!='\0'){
+            fileaddress[i]=(char)memval;
+            i++;
+            vaddr++;
+            machine->ReadMem(vaddr,1,&memval);
+        }
+        fileaddress[i]='\0';
+        //OPEN THE FILE FROM THE ADDRESS
+        OpenFile *open=fileSystem->Open(fileaddress);
+        ProcessAddressSpace *spc;
+        if(open==NULL){
+            printf("SORRY THE FILE CANT BE OPENED");
+            return;
+        }
+        spc=new ProcessAddressSpace(open);
+        currentThread->space=spc;
+        delete open;
+        spc->InitUserModeCPURegisters();
+        spc->RestoreContextOnSwitch();
+        machine->Run();
+        //SHOULD NEVER HAPPEN SINCE NO RETURN OCCURS
+        ASSERT("SORRY");
+    }
     else {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
