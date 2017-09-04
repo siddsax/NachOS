@@ -331,3 +331,56 @@ NachOSThread::RestoreUserState()
     stateRestored = true;
 }
 #endif
+
+
+// I think this can also be written in exception.cc as well....Look into it later
+// Everything concerning func is ambiguous for now
+// Have not declared this in class definition
+void
+NachOSThread::Fork()
+{
+    DEBUG('t', "Forking thread \"%s\" ", name);
+
+    NachOSThread *forkedThread =new NachOSThread("NameToBeProcessed");
+    currentThread->SaveUserState();
+
+    char fileAddr[100];
+    int i=0, vaddr=0, memval;
+    vaddr = machine->ReadRegister(4);
+    machine->ReadMem(vaddr, 1, &memval);
+    while((char)memval!='\0'){
+        fileaddress[i]=(char)memval;
+        i++;
+        vaddr++;
+        machine->ReadMem(vaddr, 1, &memval);
+    }
+    fileaddress[i]='\0';   
+
+    // Open file from address
+    OpenFile *open=fileSystem->Open(fileaddress);
+    if(open==NULL){
+        printf("Sorry!! The file can't be opened.");
+        return;
+    }
+
+    ProcessAddressSpace *spc=new ProcessAddressSpace(open);
+    // printf
+    forkedThread->space=spc;
+    delete open;    // Why??
+
+    spc->InitUserModeCPURegisters();
+    forkedThread->SaveUserState();
+    forkedThread->userRegisters[2]=0;
+
+    // Where to change PC registers
+    // How to setup page table
+    // How to set PCReg
+
+    forkedThread->CreateThreadStack(func, arg);
+    // What exactly is CreateThreadStack do?
+
+    // IntStatus oldLevel = interrupt->SetLevel(IntOff);
+}
+
+void 
+NachOSThread::func(int x){}

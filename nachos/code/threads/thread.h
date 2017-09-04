@@ -124,6 +124,7 @@ class NachOSThread {
 					// Used internally by ThreadFork()
 
     int pid, ppid;			// My pid and my parent's pid
+    void func(int x);
 
 #ifdef USER_PROGRAM
 // A thread running a user program actually has *two* sets of CPU registers -- 
@@ -136,6 +137,7 @@ class NachOSThread {
   public:
     void SaveUserState();		// save user-level register state
     void RestoreUserState();		// restore user-level register state
+    void Fork();
 
     ProcessAddressSpace *space;			// User code this thread is running.
 #endif

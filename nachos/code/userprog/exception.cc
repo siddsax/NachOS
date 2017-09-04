@@ -327,6 +327,14 @@ void ExceptionHandler(ExceptionType which)
         //SHOULD NEVER HAPPEN SINCE NO RETURN OCCURS
         ASSERT("SORRY");
     }
+    else if((which == SyscallException ) && (type == SysCall_Fork)){
+        // Implemented by Shobhit
+        // Create a new thread
+        // Copy address space 
+        // Prepare the context
+
+        currentThread->Fork();
+    }
     else {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
