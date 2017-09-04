@@ -35,7 +35,7 @@
 NachOSThread::NachOSThread(char* threadName)
 {
     pid = maxPID++;
-    numThreads = numThreads + 1;
+    numThreads = numThreads++;
     if (currentThread == NULL) {
         ppid = -1;
     }
@@ -101,18 +101,15 @@ NachOSThread::FinishThread ()
     
     threadToBeDestroyed = currentThread;
     // syscall_wrapper_Halt();
-    //printf("\n %d %d ",numThreads,maxPID);
-    //printf("Shutdown, initiated by user program.\n");
-    printf("%d\n",numThreads);
-    numThreads--;
-    printf("CHAPA LAUNDE\n");
-    if(numThreads == 0){
-        printf("Zindagi Khatam.\n");
-	interrupt->Halt();
+    printf("\n %d %d",numThreads,maxPID);
+    printf("Shutdown, initiated by user program.\n");
+    if(numThreads == 1){
+        interrupt->Halt();
+        printf("Shutdown, initiated by user program.\n");
 
     }
     else{
-	PutThreadToSleep();                 // invokes SWITCH
+        PutThreadToSleep();                 // invokes SWITCH
     }
     // not reached
 }

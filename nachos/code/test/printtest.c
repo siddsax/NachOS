@@ -19,5 +19,6 @@ main()
     syscall_wrapper_PrintString("Executed ");
     syscall_wrapper_PrintInt(syscall_wrapper_GetNumInstr());
     syscall_wrapper_PrintString(" instructions.\n");
+    syscall_wrapper_Exit(0);
     return 0;
 }
