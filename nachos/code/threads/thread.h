@@ -99,11 +99,12 @@ class NachOSThread {
     void FinishThread();  				// The thread is done executing
     
     void CheckOverflow();   			// Check if thread has 
-						// overflowed its stack
+                        // overflowed its stack
 
     //------------ CUSTOM METHODS ------------
     int GetPID() { return pid; } //To Get PID
     int GetPPID() { return ppid; } //To Get PPID
+    void Fork();
     //------------ CUSTOM METHODS ------------
 
     void setStatus(ThreadStatus st) { status = st; }
@@ -113,17 +114,17 @@ class NachOSThread {
   private:
     // some of the private data for this class is listed above
     
-    int* stack; 	 		// Bottom of the stack 
-					// NULL if this is the main thread
-					// (If NULL, don't deallocate stack)
-    ThreadStatus status;		// ready, running or blocked
+    int* stack;             // Bottom of the stack 
+                    // NULL if this is the main thread
+                    // (If NULL, don't deallocate stack)
+    ThreadStatus status;        // ready, running or blocked
     char* name;
 
     void CreateThreadStack(VoidFunctionPtr func, int arg);
-    					// Allocate a stack for thread.
-					// Used internally by ThreadFork()
+                        // Allocate a stack for thread.
+                    // Used internally by ThreadFork()
 
-    int pid, ppid;			// My pid and my parent's pid
+    int pid, ppid;          // My pid and my parent's pid
     void func(int x);
 
 #ifdef USER_PROGRAM
@@ -131,13 +132,12 @@ class NachOSThread {
 // one for its state while executing user code, one for its state 
 // while executing kernel code.
 
-    int userRegisters[NumTotalRegs];	// user-level CPU register state
+    int userRegisters[NumTotalRegs];    // user-level CPU register state
     bool stateRestored;
 
   public:
-    void SaveUserState();		// save user-level register state
-    void RestoreUserState();		// restore user-level register state
-    void Fork();
+    void SaveUserState();       // save user-level register state
+    void RestoreUserState();        // restore user-level register state
 
     ProcessAddressSpace *space;			// User code this thread is running.
 #endif
