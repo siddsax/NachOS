@@ -347,6 +347,8 @@ NachOSThread::RestoreUserState()
 }
 #endif
 
+<<<<<<< HEAD
+
 // I think this can also be written in exception.cc as well....Look into it later
 // Everything concerning func is ambiguous for now
 // Have not declared this in class definition
@@ -453,3 +455,5 @@ VoidFunctionPtr func(int x){
     }
 #endif
 };
+=======
+>>>>>>> 2edb54f20f6c2d9a3ddde476a3ef523c37a3aa15

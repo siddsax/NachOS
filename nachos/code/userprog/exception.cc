@@ -335,8 +335,18 @@ void ExceptionHandler(ExceptionType which)
 
         currentThread->Fork();
     }
+    else if ((which == SyscallException) && (type == SysCall_Exit)) {
+        //Implemented By Shobhit
+        currentThread->FinishThread();
+
+        // Advance program counters.
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
+    }
     else {
         printf("Unexpected user mode exception %d %d\n", which, type);
         ASSERT(FALSE);
     }
 }
+

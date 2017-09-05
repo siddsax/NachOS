@@ -35,7 +35,6 @@
 NachOSThread::NachOSThread(char* threadName)
 {
     pid = maxPID++;
-    numThreads = numThreads + 1;
     if (currentThread == NULL) {
         ppid = -1;
     }
@@ -72,49 +71,6 @@ NachOSThread::~NachOSThread()
     ASSERT(this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
-}
-
-
-//----------------------------------------------------------------------
-// NachOSThread::FinishThread
-//  Called by ThreadRoot when a thread is done executing the 
-//  forked procedure.
-//
-//  NOTE: we don't immediately de-allocate the thread data structure 
-//  or the execution stack, because we're still running in the thread 
-//  and we're still on the stack!  Instead, we set "threadToBeDestroyed", 
-//  so that ProcessScheduler::ScheduleThread() will call the destructor, once we're
-//  running in the context of a different thread.
-//
-//  NOTE: we disable interrupts, so that we don't get a time slice 
-//  between setting threadToBeDestroyed, and going to sleep.
-//----------------------------------------------------------------------
-
-//
-void
-NachOSThread::FinishThread ()
-{
-    (void) interrupt->SetLevel(IntOff);
-    ASSERT(this == currentThread);
-    
-    DEBUG('t', "Finishing thread \"%s\"\n", getName());
-    
-    threadToBeDestroyed = currentThread;
-    // syscall_wrapper_Halt();
-    //printf("\n %d %d ",numThreads,maxPID);
-    //printf("Shutdown, initiated by user program.\n");
-    printf("%d\n",numThreads);
-    numThreads--;
-    printf("CHAPA LAUNDE\n");
-    if(numThreads == 0){
-        printf("Zindagi Khatam.\n");
-	interrupt->Halt();
-
-    }
-    else{
-	PutThreadToSleep();                 // invokes SWITCH
-    }
-    // not reached
 }
 
 //----------------------------------------------------------------------
@@ -175,6 +131,35 @@ NachOSThread::CheckOverflow()
 #else
 	ASSERT(*stack == STACK_FENCEPOST);
 #endif
+}
+
+//----------------------------------------------------------------------
+// NachOSThread::FinishThread
+// 	Called by ThreadRoot when a thread is done executing the 
+//	forked procedure.
+//
+// 	NOTE: we don't immediately de-allocate the thread data structure 
+//	or the execution stack, because we're still running in the thread 
+//	and we're still on the stack!  Instead, we set "threadToBeDestroyed", 
+//	so that ProcessScheduler::ScheduleThread() will call the destructor, once we're
+//	running in the context of a different thread.
+//
+// 	NOTE: we disable interrupts, so that we don't get a time slice 
+//	between setting threadToBeDestroyed, and going to sleep.
+//----------------------------------------------------------------------
+
+//
+void
+NachOSThread::FinishThread ()
+{
+    (void) interrupt->SetLevel(IntOff);
+    ASSERT(this == currentThread);
+    
+    DEBUG('t', "Finishing thread \"%s\"\n", getName());
+    
+    threadToBeDestroyed = currentThread;
+    PutThreadToSleep();					// invokes SWITCH
+    // not reached
 }
 
 //----------------------------------------------------------------------
@@ -346,6 +331,7 @@ NachOSThread::RestoreUserState()
     stateRestored = true;
 }
 #endif
+
 
 // I think this can also be written in exception.cc as well....Look into it later
 // Everything concerning func is ambiguous for now

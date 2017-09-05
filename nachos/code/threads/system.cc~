@@ -12,7 +12,6 @@
 // These are all initialized and de-allocated by this file.
 
 int maxPID = 0;
-int numThreads = 0;
 List *waitingThreadList = new List;
 
 NachOSThread *currentThread;			// the thread we are running now
@@ -225,5 +224,4 @@ Cleanup()
     
     Exit(0);
 }
-
 

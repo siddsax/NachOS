@@ -35,7 +35,7 @@
 NachOSThread::NachOSThread(char* threadName)
 {
     pid = maxPID++;
-    numThreads = numThreads + 1;
+    numThreads = numThreads++;
     if (currentThread == NULL) {
         ppid = -1;
     }
@@ -101,18 +101,15 @@ NachOSThread::FinishThread ()
     
     threadToBeDestroyed = currentThread;
     // syscall_wrapper_Halt();
-    //printf("\n %d %d ",numThreads,maxPID);
-    //printf("Shutdown, initiated by user program.\n");
-    printf("%d\n",numThreads);
-    numThreads--;
-    printf("CHAPA LAUNDE\n");
-    if(numThreads == 0){
-        printf("Zindagi Khatam.\n");
-	interrupt->Halt();
+    printf("\n %d %d",numThreads,maxPID);
+    printf("Shutdown, initiated by user program.\n");
+    if(numThreads == 1){
+        interrupt->Halt();
+        printf("Shutdown, initiated by user program.\n");
 
     }
     else{
-	PutThreadToSleep();                 // invokes SWITCH
+        PutThreadToSleep();                 // invokes SWITCH
     }
     // not reached
 }
@@ -347,109 +344,3 @@ NachOSThread::RestoreUserState()
 }
 #endif
 
-// I think this can also be written in exception.cc as well....Look into it later
-// Everything concerning func is ambiguous for now
-// Have not declared this in class definition
-void
-NachOSThread::Fork()
-{
-    DEBUG('t', "Forking thread \"%s\" ", name);
-
-    NachOSThread *forkedThread =new NachOSThread("Child1");
-    currentThread->SaveUserState();
-
-    char fileaddress[100];
-    int i=0, vaddr=0, memval;
-    
-    // Don't know if register number 4 stores the fileAddress
-    vaddr = machine->ReadRegister(4);
-    machine->ReadMem(vaddr, 1, &memval);
-    while((char)memval!='\0'){
-        fileaddress[i]=(char)memval;
-        i++;
-        vaddr++;
-        machine->ReadMem(vaddr, 1, &memval);
-    }
-    fileaddress[i]='\0';   
-    // Open file from address
-    OpenFile *open=fileSystem->Open(fileaddress);
-    if(open==NULL){
-        printf("Sorry!! The file can't be opened.");
-        return;
-    }
-
-    ProcessAddressSpace *spc=new ProcessAddressSpace(open);
-    spc->InitUserModeCPURegisters();
-    forkedThread->space=spc;
-    forkedThread->SaveUserState();
-    // All registers are OK.
-    forkedThread->userRegisters[PCReg]+=4;
-    forkedThread->userRegisters[NextPCReg]+=4;
-    forkedThread->userRegisters[2]=0;
-    // Now the PCReg has been moved by 4
-    // Translation will map them to appropriate addresses or pages
-
-    delete open;    // Why??  ->maybe closing the stream
-
-    // this scheduleThread method calls _SWITCH and
-    //     after the _SWITCH() call returns, the new thread T will start running at the function that you 
-    // passed as the first argument to CreateThreadStack(). Now, it should be clear that the function passed 
-    // to CreateThreadStack() must carry out the things that the ScheduleThread() method does after
-    // _SWITCH() returns.
-
-    forkedThread->CreateThreadStack(func, arg);
-
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    scheduler->MoveThreadToReadyQueue(forkedThread);    // MoveThreadToReadyQueue assumes that interrupts 
-                    // are disabled!
-    (void) interrupt->SetLevel(oldLevel);
-}
-
-VoidFunctionPtr func(int x){
-    // Figure out a way to send these pointers
-    // maybe use a structure
-
-    // Copied ScheduleThread from scheduler.cc as this is what I am supposed to do
-    NachOSThread *oldThread = currentThread;
-    
-#ifdef USER_PROGRAM         // ignore until running user programs 
-    if (currentThread->space != NULL) { // if this thread is a user program,
-        currentThread->SaveUserState(); // save the user's CPU registers
-    currentThread->space->SaveContextOnSwitch();
-    }
-#endif
-    
-    oldThread->CheckOverflow();         // check if the old thread
-                        // had an undetected stack overflow
-
-    currentThread = nextThread;         // switch to the next thread
-    currentThread->setStatus(RUNNING);      // nextThread is now running
-    
-    DEBUG('t', "Switching from thread \"%s\" to thread \"%s\"\n",
-      oldThread->getName(), nextThread->getName());
-    
-    // This is a machine-dependent assembly language routine defined 
-    // in switch.s.  You may have to think
-    // a bit to figure out what happens after this, both from the point
-    // of view of the thread and from the perspective of the "outside world".
-
-    _SWITCH(oldThread, nextThread);
-    
-    DEBUG('t', "Now in thread \"%s\"\n", currentThread->getName());
-
-    // If the old thread gave up the processor because it was finishing,
-    // we need to delete its carcass.  Note we cannot delete the thread
-    // before now (for example, in NachOSThread::FinishThread()), because up to this
-    // point, we were still running on the old thread's stack!
-    if (threadToBeDestroyed != NULL) {
-        delete threadToBeDestroyed;
-    threadToBeDestroyed = NULL;
-    }
-    
-#ifdef USER_PROGRAM
-    if (currentThread->space != NULL) {     // if there is an address space
-        currentThread->RestoreUserState();     // to restore, do it.
-    currentThread->space->RestoreContextOnSwitch();
-    }
-#endif
-};
