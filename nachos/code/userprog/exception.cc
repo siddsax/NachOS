@@ -378,7 +378,7 @@ void ExceptionHandler(ExceptionType which)
         scheduler->MoveThreadToReadyQueue(forkedThread);    // MoveThreadToReadyQueue assumes that interrupts i
                         // are disabled!
 
-        machine->WriteRegister(2, forkedThread->getPID());
+        machine->WriteRegister(2, forkedThread->GetPID());
 
         (void) interrupt->SetLevel(oldLevel);
     }
@@ -401,7 +401,7 @@ VoidFunctionPtr fork_init_func(int arg){
     // Figure out a way to send these pointers
     // maybe use a structure
 
-    NachosThread *nextThread = (NachOSThread *) arg;
+    NachOSThread *nextThread = (NachOSThread *) arg;
 
     // Copied ScheduleThread from scheduler.cc as this is what I am supposed to do
     NachOSThread *oldThread = currentThread;
