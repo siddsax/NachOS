@@ -401,36 +401,36 @@ NachOSThread::Fork()
         return;
     }
 
-    ProcessAddressSpace *spc=new ProcessAddressSpace(open);
+    ProcessAddressSpace *spc = new ProcessAddressSpace(open);
     spc->InitUserModeCPURegisters();
-    forkedThread->space=spc;
+    forkedThread->space = spc;
+
+    machine->writeRegister(2, 0);
+
+    //Copy the machine's registers
     forkedThread->SaveUserState();
     // All registers are OK.
-    forkedThread->userRegisters[PCReg]+=4;
-    forkedThread->userRegisters[NextPCReg]+=4;
-    forkedThread->userRegisters[2]=0;
-    // Now the PCReg has been moved by 4
+
     // Translation will map them to appropriate addresses or pages
 
-    delete open;    // Why??  ->maybe closing the stream
+    delete open; //Close the stream
 
-    // this scheduleThread method calls _SWITCH and
-    //     after the _SWITCH() call returns, the new thread T will start running at the function that you 
-    // passed as the first argument to CreateThreadStack(). Now, it should be clear that the function passed 
-    // to CreateThreadStack() must carry out the things that the ScheduleThread() method does after
-    // _SWITCH() returns.
-
-    forkedThread->CreateThreadStack(func, arg);
+    forkedThread->CreateThreadStack(fork_init_func, (int) forkedThread);
 
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    scheduler->MoveThreadToReadyQueue(forkedThread);    // MoveThreadToReadyQueue assumes that interrupts 
+    scheduler->MoveThreadToReadyQueue(forkedThread);    // MoveThreadToReadyQueue assumes that interrupts i
                     // are disabled!
+
+    machine->writeRegister(2, forkedThread->getPID());
+
     (void) interrupt->SetLevel(oldLevel);
 }
 
-VoidFunctionPtr func(int x){
+VoidFunctionPtr fork_init_func(int arg){
     // Figure out a way to send these pointers
     // maybe use a structure
+
+    NachosThread *nextThread = (NachOSThread *) arg;
 
     // Copied ScheduleThread from scheduler.cc as this is what I am supposed to do
     NachOSThread *oldThread = currentThread;
@@ -475,4 +475,7 @@ VoidFunctionPtr func(int x){
     currentThread->space->RestoreContextOnSwitch();
     }
 #endif
+
+    machine->Run();
+    ASSERT(FALSE);
 };
