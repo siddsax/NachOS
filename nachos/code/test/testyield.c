@@ -6,6 +6,7 @@ main()
     int x, i;
 
     x = syscall_wrapper_Fork();
+    syscall_wrapper_PrintString("Fork Done");
     for (i=0; i<5; i++) {
        syscall_wrapper_PrintString("*** thread ");
        syscall_wrapper_PrintInt(syscall_wrapper_GetPID());
