@@ -280,7 +280,12 @@ void ExceptionHandler(ExceptionType which)
         
         int sleepTime = machine->ReadRegister(4); //Read the sleep time
 
-        if (sleepTime == 0) {
+        // Advance program counters.
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
+        
+	if (sleepTime == 0) {
             currentThread->YieldCPU(); //Yield if sleep time is zero
         }
         else {
@@ -291,17 +296,11 @@ void ExceptionHandler(ExceptionType which)
 
             (void) interrupt->SetLevel(oldLevel); //Restore interrupts to previous state
         }
-
-
-        // Advance program counters.
-        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
-        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
-        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
     else if((which == SyscallException) && (type==SysCall_Exec)){
-        //IMPLEMENTED BY JASKIRAT SINGH
+        //Implemented By Jaskirat Singh
         char fileaddress[100];
-        int i=0;
+        int i = 0;
         vaddr = machine->ReadRegister(4);
         machine->ReadMem(vaddr,1,&memval);
         while((char)memval!='\0'){
@@ -326,6 +325,14 @@ void ExceptionHandler(ExceptionType which)
         machine->Run();
         //SHOULD NEVER HAPPEN SINCE NO RETURN OCCURS
         ASSERT("SORRY");
+    }
+    else if((which == SyscallException ) && (type == SysCall_Fork)){
+        // Implemented by Shobhit
+        // Create a new thread
+        // Copy address space 
+        // Prepare the context
+
+        currentThread->Fork();
     }
     else if ((which == SyscallException) && (type == SysCall_Exit)) {
         //Implemented By Shobhit

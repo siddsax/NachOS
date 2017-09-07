@@ -35,15 +35,13 @@
 NachOSThread::NachOSThread(char* threadName)
 {
     pid = maxPID++;
-    numThreads = numThreads + 1;
-    parentThread = NULL;
     if (currentThread == NULL) {
         ppid = -1;
     }
     else {
         ppid = currentThread -> GetPID();
     }
-    List* childThreadList = new List;
+
     name = threadName;
     stackTop = NULL;
     stack = NULL;
@@ -73,71 +71,6 @@ NachOSThread::~NachOSThread()
     ASSERT(this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
-}
-
-
-//----------------------------------------------------------------------
-// NachOSThread::FinishThread
-//  Called by ThreadRoot when a thread is done executing the 
-//  forked procedure.
-//
-//  NOTE: we don't immediately de-allocate the thread data structure 
-//  or the execution stack, because we're still running in the thread 
-//  and we're still on the stack!  Instead, we set "threadToBeDestroyed", 
-//  so that ProcessScheduler::ScheduleThread() will call the destructor, once we're
-//  running in the context of a different thread.
-//
-//  NOTE: we disable interrupts, so that we don't get a time slice 
-//  between setting threadToBeDestroyed, and going to sleep.
-//----------------------------------------------------------------------
-
-//
-void
-NachOSThread::FinishThread ()
-{
-    (void) interrupt->SetLevel(IntOff);
-    ASSERT(this == currentThread);
-    
-    DEBUG('t', "Finishing thread \"%s\"\n", getName());
-    
-    threadToBeDestroyed = currentThread;
-    // syscall_wrapper_Halt();
-    //printf("\n %d %d ",numThreads,maxPID);
-    //printf("Shutdown, initiated by user program.\n");
-    printf("%d\n",numThreads);
-    numThreads--;
-    printf("CHAPA LAUNDE\n");
-    if(numThreads == 0){
-        printf("Zindagi Khatam.\n");
-	interrupt->Halt();
-
-    }
-    else{
-	ListElement *element = (ListElement*)(childThreadList->Head());
-	while(element!=NULL){ 
-		NachOSThread item = *(NachOSThread*)(element->item);
-		item.SetPPID(0);
-		element = element->next;
-	}
-	if(parentThread){
-		List* parents_childList = parentThread->childThreadList;
-		//ListElement *element_parents_child = (ListElement*)(parents_childList->Head());
-		int PID = this->pid;
-		//int sPID = (NachOSThread*)(element_parents_child->item)->GetPID()
-		parents_childList->SortedRemove(&PID);
-	}	
-	//ListElement *elementR = (ListElement*)(listOfReadyThreads->Head());
-        //while(elementR!=NULL){
-        //        NachOSThread item = *(NachOSThread*)(elementR->item);
-        //        item.SetPPID(0);
-	//	elementR = elementR->next;
-        // }
-	PutThreadToSleep();                 // invokes SWITCH
-    }
-
-    // child agar exit hoga to fir uske baap ke childThread list se uska naam katana hai
-    //listOfReadyThreads
-    // not reached
 }
 
 //----------------------------------------------------------------------
@@ -198,6 +131,35 @@ NachOSThread::CheckOverflow()
 #else
 	ASSERT(*stack == STACK_FENCEPOST);
 #endif
+}
+
+//----------------------------------------------------------------------
+// NachOSThread::FinishThread
+// 	Called by ThreadRoot when a thread is done executing the 
+//	forked procedure.
+//
+// 	NOTE: we don't immediately de-allocate the thread data structure 
+//	or the execution stack, because we're still running in the thread 
+//	and we're still on the stack!  Instead, we set "threadToBeDestroyed", 
+//	so that ProcessScheduler::ScheduleThread() will call the destructor, once we're
+//	running in the context of a different thread.
+//
+// 	NOTE: we disable interrupts, so that we don't get a time slice 
+//	between setting threadToBeDestroyed, and going to sleep.
+//----------------------------------------------------------------------
+
+//
+void
+NachOSThread::FinishThread ()
+{
+    (void) interrupt->SetLevel(IntOff);
+    ASSERT(this == currentThread);
+    
+    DEBUG('t', "Finishing thread \"%s\"\n", getName());
+    
+    threadToBeDestroyed = currentThread;
+    PutThreadToSleep();					// invokes SWITCH
+    // not reached
 }
 
 //----------------------------------------------------------------------
@@ -370,6 +332,7 @@ NachOSThread::RestoreUserState()
 }
 #endif
 
+
 // I think this can also be written in exception.cc as well....Look into it later
 // Everything concerning func is ambiguous for now
 // Have not declared this in class definition
@@ -378,11 +341,11 @@ NachOSThread::Fork()
 {
     DEBUG('t', "Forking thread \"%s\" ", name);
 
-    NachOSThread *forkedThread = new NachOSThread("Child1");
+    NachOSThread *forkedThread =new NachOSThread("Child1");
     currentThread->SaveUserState();
 
     char fileaddress[100];
-    int i = 0, vaddr = 0, memval;
+    int i=0, vaddr=0, memval;
     
     // Don't know if register number 4 stores the fileAddress
     vaddr = machine->ReadRegister(4);
@@ -396,7 +359,7 @@ NachOSThread::Fork()
     fileaddress[i]='\0';   
     // Open file from address
     OpenFile *open=fileSystem->Open(fileaddress);
-    if (open==NULL){
+    if(open==NULL){
         printf("Sorry!! The file can't be opened.");
         return;
     }

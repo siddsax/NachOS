@@ -99,6 +99,9 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 // and the stack segment
     bzero(machine->mainMemory, size);
 
+    // Testing
+    printf("%d\n", noffH.code.virtualAddr);
+
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
