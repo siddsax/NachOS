@@ -15,6 +15,7 @@ int maxPID = 0;
 int numThreads = 0;
 List *waitingThreadList = new List;
 
+int numTotalPages = 0;
 NachOSThread *currentThread;			// the thread we are running now
 NachOSThread *threadToBeDestroyed;  		// the thread that just finished
 ProcessScheduler *scheduler;			// the ready list

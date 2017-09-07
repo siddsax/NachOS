@@ -36,14 +36,8 @@ NachOSThread::NachOSThread(char* threadName)
 {
     pid = maxPID++;
     numThreads = numThreads + 1;
-    parentThread = NULL;
-    if (currentThread == NULL) {
-        ppid = -1;
-    }
-    else {
-        ppid = currentThread -> GetPID();
-    }
-    List* childThreadList = new List;
+    parentThread = currentThread;
+    childThreadList = new List;
     name = threadName;
     stackTop = NULL;
     stack = NULL;

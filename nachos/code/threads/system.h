@@ -25,6 +25,8 @@ extern void Cleanup();				// Cleanup, called when
 extern int maxPID,numThreads;
 extern List *waitingThreadList;
 
+extern int numTotalPages; //Total number of pages created
+
 extern NachOSThread *currentThread;			// the thread holding the CPU
 extern NachOSThread *threadToBeDestroyed;  		// the thread that just finished
 extern ProcessScheduler *scheduler;			// the thread scheduler

@@ -57,7 +57,7 @@ static void ReadAvail(int arg) { readAvail->V(); }
 static void WriteDone(int arg) { writeDone->V(); }
 
 // Custom
-VoidFunctionPtr fork_init_func(int arg);
+static void fork_init_func(int arg);
 
 static void ConvertIntToHex(unsigned v, Console* console)
 {
@@ -337,7 +337,7 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
 
-        DEBUG('t', "Forking thread \"%s\" ", name);
+        DEBUG('t', "Forking thread \"%s\" ", currentThread->getName());
 
         NachOSThread *forkedThread = new NachOSThread("Child1");
         currentThread->SaveUserState();
@@ -375,15 +375,9 @@ void ExceptionHandler(ExceptionType which)
 
         delete open; //Close the stream
 
-        forkedThread->CreateThreadStack(fork_init_func, (int) forkedThread);
-
-        IntStatus oldLevel = interrupt->SetLevel(IntOff);
-        scheduler->MoveThreadToReadyQueue(forkedThread);    // MoveThreadToReadyQueue assumes that interrupts i
-                        // are disabled!
+        forkedThread->ThreadFork(fork_init_func, (int) forkedThread);
 
         machine->WriteRegister(2, forkedThread->GetPID());
-
-        (void) interrupt->SetLevel(oldLevel);
     }
     else if ((which == SyscallException) && (type == SysCall_Exit)) {
         //Implemented By Shobhit
@@ -400,7 +394,7 @@ void ExceptionHandler(ExceptionType which)
     }
 }
 
-VoidFunctionPtr fork_init_func(int arg){
+static void fork_init_func(int arg){
     // Figure out a way to send these pointers
     // maybe use a structure
 
