@@ -235,4 +235,8 @@ List::SortedRemove(int *keyPtr)
     delete element;
     return thing;
 }
-
+void *
+List::Head()
+{
+    return first;
+}

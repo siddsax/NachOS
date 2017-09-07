@@ -38,13 +38,13 @@
 #define THREAD_H
 
 #include "copyright.h"
+#include "list.h"
 #include "utility.h"
 
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "addrspace.h"
 #endif
-
 // CPU register state to be saved on context switch.  
 // The SPARC and MIPS only need 10 registers, but the Snake needs 18.
 // For simplicity, this is just the max over all architectures.
@@ -88,7 +88,7 @@ class NachOSThread {
 					// NOTE -- thread being deleted
 					// must not be running when delete 
 					// is called
-
+    NachOSThread* parentThread;
     // basic thread operations
 
     void ThreadFork(VoidFunctionPtr func, int arg); 	// Make thread run (*func)(arg)
@@ -105,11 +105,12 @@ class NachOSThread {
     int GetPID() { return pid; } //To Get PID
     int GetPPID() { return ppid; } //To Get PPID
     //------------ CUSTOM METHODS ------------
-
+    void SetPID(int PID) { this->pid = PID; }
+    void SetPPID(int PID) { this->ppid = PID; }
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
-
+    List *childThreadList;
   private:
     // some of the private data for this class is listed above
     
