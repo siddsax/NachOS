@@ -164,4 +164,4 @@ the program counter.
 ### Exec system call
 *Syscall_Exec*
 <!-- TO BE FILLED BY JASKIRAT SINGH -->
-First , obtain the string of the file address that is to be executed. That has been calculated as per lines 303 to 313. Next, we create an openfile instance(if file address is not null). Pass it to the current thread, then initialize the registers and restore the context. After this, machine->run is called and then if returns with an error, an assertion of failure is shown.
+First , obtain the string of the file address that is to be executed. That has been calculated as per lines 303 to 313. Next, we create an openfile instance(if file address is not null). Pass it to the current thread, then initialize the registers and restore the context. After this, machine->run is called and then if returns with an error, an assertion of failure is shown. The main thing done here was to clear the registers and allocate a new address space to the thread.
