@@ -355,11 +355,11 @@ NachOSThread::Fork()
 {
     DEBUG('t', "Forking thread \"%s\" ", name);
 
-    NachOSThread *forkedThread =new NachOSThread("Child1");
+    NachOSThread *forkedThread = new NachOSThread("Child1");
     currentThread->SaveUserState();
 
     char fileaddress[100];
-    int i=0, vaddr=0, memval;
+    int i = 0, vaddr = 0, memval;
     
     // Don't know if register number 4 stores the fileAddress
     vaddr = machine->ReadRegister(4);
@@ -373,7 +373,7 @@ NachOSThread::Fork()
     fileaddress[i]='\0';   
     // Open file from address
     OpenFile *open=fileSystem->Open(fileaddress);
-    if(open==NULL){
+    if (open==NULL){
         printf("Sorry!! The file can't be opened.");
         return;
     }
