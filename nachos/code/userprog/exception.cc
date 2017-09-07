@@ -328,9 +328,11 @@ void ExceptionHandler(ExceptionType which)
     }
     else if((which == SyscallException ) && (type == SysCall_Fork)){
         // Implemented by Shobhit
-        // Create a new thread
-        // Copy address space 
-        // Prepare the context
+
+	// Advance program counters (No need to advance for child)
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
 
         currentThread->Fork();
     }
