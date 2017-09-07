@@ -362,7 +362,7 @@ void ExceptionHandler(ExceptionType which)
         spc->InitUserModeCPURegisters();
         forkedThread->space = spc;
 
-        machine->writeRegister(2, 0);
+        machine->WriteRegister(2, 0);
 
         //Copy the machine's registers
         forkedThread->SaveUserState();
@@ -378,7 +378,7 @@ void ExceptionHandler(ExceptionType which)
         scheduler->MoveThreadToReadyQueue(forkedThread);    // MoveThreadToReadyQueue assumes that interrupts i
                         // are disabled!
 
-        machine->writeRegister(2, forkedThread->getPID());
+        machine->WriteRegister(2, forkedThread->getPID());
 
         (void) interrupt->SetLevel(oldLevel);
     }
