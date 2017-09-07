@@ -56,6 +56,9 @@ static Semaphore* writeDone;
 static void ReadAvail(int arg) { readAvail->V(); }
 static void WriteDone(int arg) { writeDone->V(); }
 
+// Custom
+VoidFunctionPtr fork_init_func(int arg);
+
 static void ConvertIntToHex(unsigned v, Console* console)
 {
     unsigned x;
