@@ -137,6 +137,14 @@ NachOSThread::FinishThread ()
     //listOfReadyThreads
     // not reached
 }
+int NachOSThread::GetChildExitCode(int cpid){
+    ListElement* iter= (ListElement*)currentThread->childExitCodeQueue->Head();
+    while(iter!=NULL){
+        if(iter->key==cpid)     return (int)iter->item;
+        iter=iter->next;
+    }
+    return NullExitCode;
+}
 
 //----------------------------------------------------------------------
 // NachOSThread::ThreadFork
