@@ -97,7 +97,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
     
 // zero out the entire address space, to zero the unitialized data segment 
 // and the stack segment
-    bzero(machine->mainMemory, size);
+    bzero(machine->mainMemory + numTotalPages * PageSize, size);
 
     // Testing
     printf("%d\n", noffH.code.virtualAddr);
@@ -118,7 +118,47 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 
 }
 
-//----------------------------------------------------------------------
+AddressSpace::ProcessAddressSpace(int numVirtualPages, int startPhysicalPage)
+{
+    unsigned int size;
+
+    size = numVirtualPages * PageSize;
+    ASSERT(numVirtualPages + numTotalPages <= NumPhysPages);            // check we're not trying
+                                                // to run anything too big --
+                                                // at least until we have
+                                                // virtual memory
+
+    DEBUG('a', "Initializing address space, num pages %d, size %d\n",
+                                        numVirtualPages, size);
+// first, set up the translation 
+    KernelPageTable = new TranslationEntry[numVirtualPages];
+    for (i = 0; i < numVirtualPages; i++) {
+        KernelPageTable[i].virtualPage = i;     // for now, virtual page # = phys page #
+        KernelPageTable[i].physicalPage = i + numTotalPages;
+        KernelPageTable[i].valid = TRUE;
+        KernelPageTable[i].use = FALSE;
+        KernelPageTable[i].dirty = FALSE;
+        KernelPageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+                                        // a separate page, we could set its 
+                                        // pages to be read-only
+    }
+
+// zero out the entire address space, to zero the unitialized data segment 
+// and the stack segment
+    bzero(machine->mainMemory + numTotalPages * PageSize, size);
+
+    int startPhysicalAddress = startPhysicalPage * PageSize;
+    int endPhysicalAddress = startPhysicalAddress + numVirtualPages * PageSize;
+
+    int k = numTotalPages * PageSize;
+
+    for(int i = startPhysicalAddress; i < endPhysicalAddress; i++) {
+        machine->mainMemory[k++] = machine->mainMemory[i];
+    }
+
+    numTotalPages += numVirtualPages;
+}
+
 // ProcessAddressSpace::~ProcessAddressSpace
 // 	Dealloate an address space.  Nothing for now!
 //----------------------------------------------------------------------

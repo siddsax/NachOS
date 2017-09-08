@@ -345,23 +345,7 @@ void ExceptionHandler(ExceptionType which)
         char fileaddress[100];
         int i = 0, vaddr = 0, memval;
         
-        vaddr = machine->ReadRegister(4);
-        machine->ReadMem(vaddr, 1, &memval);
-        while((char)memval!='\0'){
-            fileaddress[i]=(char)memval;
-            i++;
-            vaddr++;
-            machine->ReadMem(vaddr, 1, &memval);
-        }
-        fileaddress[i]='\0';   
-        // Open file from address
-        OpenFile *open=fileSystem->Open(fileaddress);
-        if (open==NULL){
-            printf("Sorry!! The file can't be opened.");
-            return;
-        }
-
-        ProcessAddressSpace *spc = new ProcessAddressSpace(open);
+        ProcessAddressSpace *spc = new ProcessAddressSpace(machine->pageTableSize, machine->KernelPageTable[0].physicalPage);
         spc->InitUserModeCPURegisters();
         forkedThread->space = spc;
 
