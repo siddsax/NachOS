@@ -37,7 +37,11 @@ NachOSThread::NachOSThread(char* threadName)
     pid = maxPID++;
     numThreads = numThreads + 1;
     parentThread = currentThread;
-    childThreadList = new List;
+
+    childExitCodeQueue = new List;
+    childQueue = new List;
+    waitingThreadPID=-1;
+
     name = threadName;
     stackTop = NULL;
     stack = NULL;
@@ -379,3 +383,14 @@ void fork_init_func(int arg){
     machine->Run();
 #endif
 }
+
+//----------------------------------------------------------------------
+// NachOSThread::AddChild
+//  Add the new created childThread to the childThreadList
+//----------------------------------------------------------------------
+
+void 
+NachOSThread::AddChild(NachOSThread* newThread){
+    childThreadList->SortedInsert((void *)newThread, newThread->GetPID());
+}
+

@@ -59,6 +59,9 @@
 // Thread state
 enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED };
 
+////////////////////// Custom ///////////////////////////
+#define NullExitCode -1;
+
 // external function, dummy routine whose sole job is to call NachOSThread::Print
 extern void ThreadPrint(int arg);	 
 
@@ -85,22 +88,22 @@ class NachOSThread {
   public:
     int numInstructions = 0;
     // int numThreads = 0;
-    NachOSThread(char* debugName);		// initialize a Thread 
-    ~NachOSThread(); 				// deallocate a Thread
-					// NOTE -- thread being deleted
-					// must not be running when delete 
-					// is called
+    NachOSThread(char* debugName);      // initialize a Thread 
+    ~NachOSThread();                // deallocate a Thread
+                    // NOTE -- thread being deleted
+                    // must not be running when delete 
+                    // is called
     NachOSThread* parentThread;
     // basic thread operations
 
-    void ThreadFork(VoidFunctionPtr func, int arg); 	// Make thread run (*func)(arg)
-    void YieldCPU();  				// Relinquish the CPU if any 
-						// other thread is runnable
-    void PutThreadToSleep();  				// Put the thread to sleep and 
-						// relinquish the processor
-    void FinishThread();  				// The thread is done executing
+    void ThreadFork(VoidFunctionPtr func, int arg);     // Make thread run (*func)(arg)
+    void YieldCPU();                // Relinquish the CPU if any 
+                        // other thread is runnable
+    void PutThreadToSleep();                // Put the thread to sleep and 
+                        // relinquish the processor
+    void FinishThread();                // The thread is done executing
     
-    void CheckOverflow();   			// Check if thread has 
+    void CheckOverflow();               // Check if thread has 
                         // overflowed its stack
 
     //------------ CUSTOM METHODS ------------
@@ -110,13 +113,19 @@ class NachOSThread {
 
         return parentThread->GetPID();
     } //To Get PPID
-    
+
     //------------ CUSTOM METHODS ------------
     //void SetPID(int PID) { this->pid = PID; }
     void SetPPID(int PID) { this->ppid = PID; }
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
+    
+    // Added by shobhit: to add the child after the fork
+    void AddChild(NachOSThread* childThread);
+    void AddChildExitCode(int exCode, int pid);
+    int GetChildExitCode(int pid);
+
   private:
     // some of the private data for this class is listed above
     
@@ -132,7 +141,9 @@ class NachOSThread {
 
     int pid, ppid;          // My pid and my parent's pid
     
-    List *childThreadList;
+    int waitingThreadPID;
+    List *childQueue;
+    List *childExitCodeQueue;
 
 #ifdef USER_PROGRAM
 // A thread running a user program actually has *two* sets of CPU registers -- 
