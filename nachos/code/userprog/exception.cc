@@ -56,9 +56,6 @@ static Semaphore* writeDone;
 static void ReadAvail(int arg) { readAvail->V(); }
 static void WriteDone(int arg) { writeDone->V(); }
 
-// Custom
-static void fork_init_func(int arg);
-
 static void ConvertIntToHex(unsigned v, Console* console)
 {
     unsigned x;
@@ -330,23 +327,17 @@ void ExceptionHandler(ExceptionType which)
         ASSERT("SORRY");
     }
     else if((which == SyscallException ) && (type == SysCall_Fork)){
-        // Implemented by Shobhit
-
+        // Implemented by Shobhit/Gurpreet
 	// Advance program counters (No need to advance for child)
         machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
-
+machine->WriteRegister(2, 10);
         DEBUG('t', "Forking thread \"%s\" ", currentThread->getName());
 
-        NachOSThread *forkedThread = new NachOSThread("Child1");
-        currentThread->SaveUserState();
+        NachOSThread *forkedThread = new NachOSThread("ForkedThread");
 
-        char fileaddress[100];
-        int i = 0, vaddr = 0, memval;
-        
         ProcessAddressSpace *spc = new ProcessAddressSpace(machine->pageTableSize, machine->KernelPageTable[0].physicalPage);
-        spc->InitUserModeCPURegisters();
         forkedThread->space = spc;
 
         machine->WriteRegister(2, 0);
@@ -357,10 +348,7 @@ void ExceptionHandler(ExceptionType which)
 
         // Translation will map them to appropriate addresses or pages
 
-        delete open; //Close the stream
-
         forkedThread->ThreadFork(fork_init_func, (int) forkedThread);
-
         machine->WriteRegister(2, forkedThread->GetPID());
     }
     else if ((which == SyscallException) && (type == SysCall_Exit)) {
@@ -377,57 +365,3 @@ void ExceptionHandler(ExceptionType which)
         ASSERT(FALSE);
     }
 }
-
-static void fork_init_func(int arg){
-    // Figure out a way to send these pointers
-    // maybe use a structure
-
-    NachOSThread *nextThread = (NachOSThread *) arg;
-
-    // Copied ScheduleThread from scheduler.cc as this is what I am supposed to do
-    NachOSThread *oldThread = currentThread;
-    
-#ifdef USER_PROGRAM         // ignore until running user programs 
-    if (currentThread->space != NULL) { // if this thread is a user program,
-        currentThread->SaveUserState(); // save the user's CPU registers
-    currentThread->space->SaveContextOnSwitch();
-    }
-#endif
-    
-    oldThread->CheckOverflow();         // check if the old thread
-                        // had an undetected stack overflow
-
-    currentThread = nextThread;         // switch to the next thread
-    currentThread->setStatus(RUNNING);      // nextThread is now running
-    
-    DEBUG('t', "Switching from thread \"%s\" to thread \"%s\"\n",
-      oldThread->getName(), nextThread->getName());
-    
-    // This is a machine-dependent assembly language routine defined 
-    // in switch.s.  You may have to think
-    // a bit to figure out what happens after this, both from the point
-    // of view of the thread and from the perspective of the "outside world".
-
-    _SWITCH(oldThread, nextThread);
-    
-    DEBUG('t', "Now in thread \"%s\"\n", currentThread->getName());
-
-    // If the old thread gave up the processor because it was finishing,
-    // we need to delete its carcass.  Note we cannot delete the thread
-    // before now (for example, in NachOSThread::FinishThread()), because up to this
-    // point, we were still running on the old thread's stack!
-    if (threadToBeDestroyed != NULL) {
-        delete threadToBeDestroyed;
-    threadToBeDestroyed = NULL;
-    }
-    
-#ifdef USER_PROGRAM
-    if (currentThread->space != NULL) {     // if there is an address space
-        currentThread->RestoreUserState();     // to restore, do it.
-    currentThread->space->RestoreContextOnSwitch();
-    }
-#endif
-
-    machine->Run();
-    ASSERT(FALSE);
-};

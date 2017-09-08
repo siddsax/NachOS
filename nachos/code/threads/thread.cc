@@ -364,6 +364,18 @@ NachOSThread::RestoreUserState()
 }
 #endif
 
-// I think this can also be written in exception.cc as well....Look into it later
-// Everything concerning func is ambiguous for now
-// Have not declared this in class definition
+void fork_init_func(int arg){
+    if (threadToBeDestroyed != NULL) {
+        delete threadToBeDestroyed;
+        threadToBeDestroyed = NULL;
+    }
+    
+#ifdef USER_PROGRAM
+    if (currentThread->space != NULL) {     // if there is an address space
+        currentThread->RestoreUserState();     // to restore, do it.
+        currentThread->space->RestoreContextOnSwitch();
+    }
+
+    machine->Run();
+#endif
+}

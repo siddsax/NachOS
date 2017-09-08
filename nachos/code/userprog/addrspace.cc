@@ -116,11 +116,14 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 			noffH.initData.size, noffH.initData.inFileAddr);
     }
 
+    numTotalPages += numVirtualPages;
 }
 
-AddressSpace::ProcessAddressSpace(int numVirtualPages, int startPhysicalPage)
+ProcessAddressSpace::ProcessAddressSpace(int numPages, int startPhysicalPage)
 {
     unsigned int size;
+
+    numVirtualPages = numPages;
 
     size = numVirtualPages * PageSize;
     ASSERT(numVirtualPages + numTotalPages <= NumPhysPages);            // check we're not trying
@@ -132,7 +135,7 @@ AddressSpace::ProcessAddressSpace(int numVirtualPages, int startPhysicalPage)
                                         numVirtualPages, size);
 // first, set up the translation 
     KernelPageTable = new TranslationEntry[numVirtualPages];
-    for (i = 0; i < numVirtualPages; i++) {
+    for (int i = 0; i < numVirtualPages; i++) {
         KernelPageTable[i].virtualPage = i;     // for now, virtual page # = phys page #
         KernelPageTable[i].physicalPage = i + numTotalPages;
         KernelPageTable[i].valid = TRUE;
@@ -150,10 +153,10 @@ AddressSpace::ProcessAddressSpace(int numVirtualPages, int startPhysicalPage)
     int startPhysicalAddress = startPhysicalPage * PageSize;
     int endPhysicalAddress = startPhysicalAddress + numVirtualPages * PageSize;
 
-    int k = numTotalPages * PageSize;
+    int j = numTotalPages * PageSize;
 
     for(int i = startPhysicalAddress; i < endPhysicalAddress; i++) {
-        machine->mainMemory[k++] = machine->mainMemory[i];
+        machine->mainMemory[j++] = machine->mainMemory[i];
     }
 
     numTotalPages += numVirtualPages;
