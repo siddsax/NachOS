@@ -36,7 +36,13 @@ NachOSThread::NachOSThread(char* threadName)
 {
     pid = maxPID++;
     numThreads = numThreads + 1;
-    parentThread = currentThread;
+    parentThread = NULL;
+    if (currentThread == NULL) {
+        ppid = -1;
+    }
+    else {
+        ppid = currentThread -> GetPID();
+    }
     childThreadList = new List;
     name = threadName;
     stackTop = NULL;
@@ -86,53 +92,7 @@ NachOSThread::~NachOSThread()
 //----------------------------------------------------------------------
 
 //
-void
-NachOSThread::FinishThread ()
-{
-    /*(void) interrupt->SetLevel(IntOff);
-    ASSERT(this == currentThread);
-    
-    DEBUG('t', "Finishing thread \"%s\"\n", getName());
-    
-    threadToBeDestroyed = currentThread;
-    // syscall_wrapper_Halt();
-    //printf("\n %d %d ",numThreads,maxPID);
-    //printf("Shutdown, initiated by user program.\n");
-    printf("%d\n",numThreads);
-    numThreads--;
-    printf("CHAPA LAUNDE\n");
-    if(numThreads == 0){
-        printf("Zindagi Khatam.\n");
-	interrupt->Halt();
-
-    }
-    else{
-	//ListElement *element = (ListElement*)(childThreadList->Head());
-	//while(element!=NULL){ 
-	//	NachOSThread item = *(NachOSThread*)(element->item);
-	//	item.SetPPID(0);
-	//	element = element->next;
-	//}
-	//if(parentThread){
-	//	List* parents_childList = parentThread->childThreadList;
-	//	//ListElement *element_parents_child = (ListElement*)(parents_childList->Head());
-	//	int PID = this->pid;
-		//int sPID = (NachOSThread*)(element_parents_child->item)->GetPID()
-	//	parents_childList->SortedRemove(&PID);
-	//}	
-	//ListElement *elementR = (ListElement*)(listOfReadyThreads->Head());
-        //while(elementR!=NULL){
-        //        NachOSThread item = *(NachOSThread*)(elementR->item);
-        //        item.SetPPID(0);
-	//	elementR = elementR->next;
-        // }
-	//PutThreadToSleep();                 // invokes SWITCH
-    }*/
-
-    // child agar exit hoga to fir uske baap ke childThread list se uska naam katana hai
-    //listOfReadyThreads
-    // not reached
-}
+// void
 
 //----------------------------------------------------------------------
 // NachOSThread::ThreadFork
@@ -153,6 +113,47 @@ NachOSThread::FinishThread ()
 //	"func" is the procedure to run concurrently.
 //	"arg" is a single argument to be passed to the procedure.
 //----------------------------------------------------------------------
+
+void
+NachOSThread::FinishThread ()
+{
+    (void) interrupt->SetLevel(IntOff);
+    ASSERT(this == currentThread);
+    
+    DEBUG('t', "Finishing thread \"%s\"\n", getName());
+    
+    threadToBeDestroyed = currentThread;
+    
+    printf("%d\n",numThreads);
+    numThreads--;
+    printf("CHAPA LAUNDE\n");
+    if(numThreads == 0){
+        printf("Zindagi Khatam.\n");
+    interrupt->Halt();
+
+    }
+    else{
+    ListElement *element = (ListElement*)(childThreadList->Head());
+    while(element!=NULL){ 
+        NachOSThread item = *(NachOSThread*)(element->item);
+        item.SetPPID(0);
+        element = element->next;
+    }
+    if(parentThread){
+        List* parents_childList = parentThread->childThreadList;
+        //ListElement *element_parents_child = (ListElement*)(parents_childList->Head());
+        int PID = this->pid;
+        //int sPID = (NachOSThread*)(element_parents_child->item)->GetPID()
+        parents_childList->SortedRemove(&PID);
+    }   
+    PutThreadToSleep();                 // invokes SWITCH
+    }
+
+    // child agar exit hoga to fir uske baap ke childThread list se uska naam katana hai
+    //listOfReadyThreads
+    // not reached
+}
+
 
 void 
 NachOSThread::ThreadFork(VoidFunctionPtr func, int arg)

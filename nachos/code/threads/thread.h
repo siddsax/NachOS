@@ -105,18 +105,16 @@ class NachOSThread {
 
     //------------ CUSTOM METHODS ------------
     int GetPID() { return pid; } //To Get PID
-    int GetPPID() { 
-        if (parentThread == NULL) return -1;
-
-        return parentThread->GetPID();
-    } //To Get PPID
+    int GetPPID() { return ppid; }  //To Get PPID
     
     //------------ CUSTOM METHODS ------------
     //void SetPID(int PID) { this->pid = PID; }
+    void SetPID(int PID) { this->pid = PID; }
     void SetPPID(int PID) { this->ppid = PID; }
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
+    List *childThreadList;
   private:
     // some of the private data for this class is listed above
     
@@ -132,7 +130,7 @@ class NachOSThread {
 
     int pid, ppid;          // My pid and my parent's pid
     
-    List *childThreadList;
+    // List *childThreadList;
 
 #ifdef USER_PROGRAM
 // A thread running a user program actually has *two* sets of CPU registers -- 
