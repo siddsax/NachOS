@@ -152,8 +152,8 @@ main(int argc, char **argv)
 				sprintf(snum, "%d", n);//itoa(n, snum, 10);
 				NachOSThread *newThread = new NachOSThread(snum);
 				newThread->space = space;
-				space->InitUserModeCPURegisters();
-				space->RestoreContextOnSwitch();
+				//space->InitUserModeCPURegisters();
+				//space->RestoreContextOnSwitch();
       				if(k==1){
       					prty = atoi(x);
       					printf("%s     %d\n",name,prty);

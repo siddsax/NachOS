@@ -90,7 +90,6 @@ ProcessScheduler::SelectNextReadyThread ()
 void
 ProcessScheduler::ScheduleThread (NachOSThread *nextThread)
 {
-    printf("Here!!!!!!");
     NachOSThread *oldThread = currentThread;
     
 #ifdef USER_PROGRAM			// ignore until running user programs 
