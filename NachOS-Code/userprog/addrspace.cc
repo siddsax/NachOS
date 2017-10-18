@@ -27,19 +27,18 @@
 //	endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
 
-static void 
-SwapHeader (NoffHeader *noffH)
-{
-	noffH->noffMagic = WordToHost(noffH->noffMagic);
-	noffH->code.size = WordToHost(noffH->code.size);
-	noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
-	noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
-	noffH->initData.size = WordToHost(noffH->initData.size);
-	noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
-	noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
-	noffH->uninitData.size = WordToHost(noffH->uninitData.size);
-	noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
-	noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
+static void
+SwapHeader(NoffHeader *noffH) {
+    noffH->noffMagic = WordToHost(noffH->noffMagic);
+    noffH->code.size = WordToHost(noffH->code.size);
+    noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
+    noffH->code.inFileAddr = WordToHost(noffH->code.inFileAddr);
+    noffH->initData.size = WordToHost(noffH->initData.size);
+    noffH->initData.virtualAddr = WordToHost(noffH->initData.virtualAddr);
+    noffH->initData.inFileAddr = WordToHost(noffH->initData.inFileAddr);
+    noffH->uninitData.size = WordToHost(noffH->uninitData.size);
+    noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
+    noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
 
 //----------------------------------------------------------------------
@@ -58,8 +57,7 @@ SwapHeader (NoffHeader *noffH)
 //----------------------------------------------------------------------
 
 /* ----------------------- CUSTOM ----------------------- */
-ProcessAddressSpace::ProcessAddressSpace(int numPages, int startPhysicalPage)
-{
+ProcessAddressSpace::ProcessAddressSpace(int numPages, int startPhysicalPage) {
     unsigned int size, i, j;
 
     numVirtualPages = numPages;
@@ -90,7 +88,7 @@ ProcessAddressSpace::ProcessAddressSpace(int numPages, int startPhysicalPage)
 
     j = numTotalPages * PageSize;
 
-    for(i = startPhysicalAddress; i < endPhysicalAddress; i++) {
+    for (i = startPhysicalAddress; i < endPhysicalAddress; i++) {
         machine->mainMemory[j++] = machine->mainMemory[i];
     }
 
@@ -101,6 +99,9 @@ ProcessAddressSpace::ProcessAddressSpace(int numPages, int startPhysicalPage)
 ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
     NoffHeader noffH;
     unsigned int i, size;
+    unsigned vpn, offset;
+    TranslationEntry *entry;
+    unsigned int pageFrame;
 
     executable->ReadAt((char *) &noffH, sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) &&
@@ -147,17 +148,27 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
     if (noffH.code.size > 0) {
         DEBUG('a', "Initializing code segment, at 0x%x, size %d\n",
               noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr + numTotalPages * PageSize]),
+        vpn = noffH.code.virtualAddr / PageSize;
+        offset = noffH.code.virtualAddr % PageSize;
+        entry = &KernelPageTable[vpn];
+        pageFrame = entry->physicalPage;
+        executable->ReadAt(&(machine->mainMemory[pageFrame * PageSize + offset]),
                            noffH.code.size, noffH.code.inFileAddr);
     }
     if (noffH.initData.size > 0) {
         DEBUG('a', "Initializing data segment, at 0x%x, size %d\n",
               noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr + numTotalPages * PageSize]),
+        vpn = noffH.initData.virtualAddr / PageSize;
+        offset = noffH.initData.virtualAddr % PageSize;
+        entry = &KernelPageTable[vpn];
+        pageFrame = entry->physicalPage;
+        executable->ReadAt(&(machine->mainMemory[pageFrame * PageSize + offset]),
                            noffH.initData.size, noffH.initData.inFileAddr);
     }
 
+/* ----------------------- CUSTOM ----------------------- */
     numTotalPages += numVirtualPages;
+/* ----------------------- CUSTOM ----------------------- */
 }
 
 //----------------------------------------------------------------------
@@ -165,9 +176,8 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
 // 	Dealloate an address space.  Nothing for now!
 //----------------------------------------------------------------------
 
-ProcessAddressSpace::~ProcessAddressSpace()
-{
-   delete KernelPageTable;
+ProcessAddressSpace::~ProcessAddressSpace() {
+    delete KernelPageTable;
 }
 
 //----------------------------------------------------------------------
@@ -181,23 +191,22 @@ ProcessAddressSpace::~ProcessAddressSpace()
 //----------------------------------------------------------------------
 
 void
-ProcessAddressSpace::InitUserModeCPURegisters()
-{
+ProcessAddressSpace::InitUserModeCPURegisters() {
     int i;
 
     for (i = 0; i < NumTotalRegs; i++)
-	machine->WriteRegister(i, 0);
+        machine->WriteRegister(i, 0);
 
     // Initial program counter -- must be location of "Start"
-    machine->WriteRegister(PCReg, 0);	
+    machine->WriteRegister(PCReg, 0);
 
     // Need to also tell MIPS where next instruction is, because
     // of branch delay possibility
     machine->WriteRegister(NextPCReg, 4);
 
-   // Set the stack register to the end of the address space, where we
-   // allocated the stack; but subtract off a bit, to make sure we don't
-   // accidentally reference off the end!
+    // Set the stack register to the end of the address space, where we
+    // allocated the stack; but subtract off a bit, to make sure we don't
+    // accidentally reference off the end!
     machine->WriteRegister(StackReg, numVirtualPages * PageSize - 16);
     DEBUG('a', "Initializing stack register to %d\n", numVirtualPages * PageSize - 16);
 }
@@ -210,8 +219,7 @@ ProcessAddressSpace::InitUserModeCPURegisters()
 //	For now, nothing!
 //----------------------------------------------------------------------
 
-void ProcessAddressSpace::SaveContextOnSwitch() 
-{}
+void ProcessAddressSpace::SaveContextOnSwitch() {}
 
 //----------------------------------------------------------------------
 // ProcessAddressSpace::RestoreContextOnSwitch
@@ -221,8 +229,7 @@ void ProcessAddressSpace::SaveContextOnSwitch()
 //      For now, tell the machine where to find the page table.
 //----------------------------------------------------------------------
 
-void ProcessAddressSpace::RestoreContextOnSwitch() 
-{
+void ProcessAddressSpace::RestoreContextOnSwitch() {
     machine->KernelPageTable = KernelPageTable;
     machine->pageTableSize = numVirtualPages;
 }

@@ -16,8 +16,7 @@
 // 	Initialize performance metrics to zero, at system startup.
 //----------------------------------------------------------------------
 
-Statistics::Statistics()
-{
+Statistics::Statistics() {
     totalTicks = idleTicks = systemTicks = userTicks = 0;
     numDiskReads = numDiskWrites = 0;
     numConsoleCharsRead = numConsoleCharsWritten = 0;
@@ -31,14 +30,13 @@ Statistics::Statistics()
 //----------------------------------------------------------------------
 
 void
-Statistics::Print()
-{
-    printf("Ticks: total %d, idle %d, system %d, user %d\n", totalTicks, 
-	idleTicks, systemTicks, userTicks);
+Statistics::Print() {
+    printf("Ticks: total %d, idle %d, system %d, user %d\n", totalTicks,
+           idleTicks, systemTicks, userTicks);
     printf("Disk I/O: reads %d, writes %d\n", numDiskReads, numDiskWrites);
-    printf("Console I/O: reads %d, writes %d\n", numConsoleCharsRead, 
-	numConsoleCharsWritten);
+    printf("Console I/O: reads %d, writes %d\n", numConsoleCharsRead,
+           numConsoleCharsWritten);
     printf("Paging: faults %d\n", numPageFaults);
-    printf("Network I/O: packets received %d, sent %d\n", numPacketsRecvd, 
-	numPacketsSent);
+    printf("Network I/O: packets received %d, sent %d\n", numPacketsRecvd,
+           numPacketsSent);
 }

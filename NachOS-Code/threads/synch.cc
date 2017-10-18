@@ -33,8 +33,7 @@
 //	"initialValue" is the initial value of the semaphore.
 //----------------------------------------------------------------------
 
-Semaphore::Semaphore(char* debugName, int initialValue)
-{
+Semaphore::Semaphore(char *debugName, int initialValue) {
     name = debugName;
     value = initialValue;
     queue = new List;
@@ -46,8 +45,7 @@ Semaphore::Semaphore(char* debugName, int initialValue)
 //	is still waiting on the semaphore!
 //----------------------------------------------------------------------
 
-Semaphore::~Semaphore()
-{
+Semaphore::~Semaphore() {
     delete queue;
 }
 
@@ -62,18 +60,17 @@ Semaphore::~Semaphore()
 //----------------------------------------------------------------------
 
 void
-Semaphore::P()
-{
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
-    
-    while (value == 0) { 			// semaphore not available
-	queue->Append((void *)currentThread);	// so go to sleep
-	currentThread->PutThreadToSleep();
-    } 
-    value--; 					// semaphore available, 
-						// consume its value
-    
-    (void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
+Semaphore::P() {
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);    // disable interrupts
+
+    while (value == 0) {            // semaphore not available
+        queue->Append((void *) currentThread);    // so go to sleep
+        currentThread->PutThreadToSleep();
+    }
+    value--;                    // semaphore available,
+    // consume its value
+
+    (void) interrupt->SetLevel(oldLevel);    // re-enable interrupts
 }
 
 //----------------------------------------------------------------------
@@ -85,28 +82,43 @@ Semaphore::P()
 //----------------------------------------------------------------------
 
 void
-Semaphore::V()
-{
+Semaphore::V() {
     NachOSThread *thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
-    thread = (NachOSThread *)queue->Remove();
-    if (thread != NULL)	   // make thread ready, consuming the V immediately
-	scheduler->MoveThreadToReadyQueue(thread);
+    thread = (NachOSThread *) queue->Remove();
+    if (thread != NULL)       // make thread ready, consuming the V immediately
+        scheduler->MoveThreadToReadyQueue(thread);
     value++;
     (void) interrupt->SetLevel(oldLevel);
 }
 
-// Dummy functions -- so we can compile our later assignments 
+
+// Dummy functions -- so we can compile our later assignments
 // Note -- without a correct implementation of Condition::Wait(), 
 // the test case in the network assignment won't work!
-Lock::Lock(char* debugName) {}
+Lock::Lock(char *debugName) {}
+
+
 Lock::~Lock() {}
+
+
 void Lock::Acquire() {}
+
+
 void Lock::Release() {}
 
-Condition::Condition(char* debugName) { }
-Condition::~Condition() { }
-void Condition::Wait(Lock* conditionLock) { ASSERT(FALSE); }
-void Condition::Signal(Lock* conditionLock) { }
-void Condition::Broadcast(Lock* conditionLock) { }
+
+Condition::Condition(char *debugName) {}
+
+
+Condition::~Condition() {}
+
+
+void Condition::Wait(Lock *conditionLock) { ASSERT(FALSE); }
+
+
+void Condition::Signal(Lock *conditionLock) {}
+
+
+void Condition::Broadcast(Lock *conditionLock) {}

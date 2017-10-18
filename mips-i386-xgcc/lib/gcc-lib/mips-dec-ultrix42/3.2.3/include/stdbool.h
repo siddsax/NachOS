@@ -33,9 +33,9 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef __cplusplus
 
-#define bool	_Bool
-#define true	1
-#define false	0
+#define bool    _Bool
+#define true    1
+#define false    0
 
 #else /* __cplusplus */
 
@@ -48,6 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #endif /* __cplusplus */
 
 /* Signal that all the definitions are present.  */
-#define __bool_true_false_are_defined	1
+#define __bool_true_false_are_defined    1
 
-#endif	/* stdbool.h */
+#endif    /* stdbool.h */

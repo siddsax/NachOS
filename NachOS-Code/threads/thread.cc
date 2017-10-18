@@ -20,9 +20,10 @@
 #include "synch.h"
 #include "system.h"
 
-#define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
-					// execution stack, for detecting 
-					// stack overflows
+
+#define STACK_FENCEPOST 0xdeadbeef    // this is put at the top of the
+// execution stack, for detecting
+// stack overflows
 
 //----------------------------------------------------------------------
 // NachOSThread::NachOSThread
@@ -32,8 +33,7 @@
 //	"threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
 
-NachOSThread::NachOSThread(char* threadName)
-{
+NachOSThread::NachOSThread(char *threadName) {
     name = threadName;
 
     /* ----------------------- CUSTOM ----------------------- */
@@ -78,13 +78,12 @@ NachOSThread::NachOSThread(char* threadName)
 //      as part of starting up Nachos.
 //----------------------------------------------------------------------
 
-NachOSThread::~NachOSThread()
-{
+NachOSThread::~NachOSThread() {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
 
     ASSERT(this != currentThread);
     if (stack != NULL)
-	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
+        DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
 }
 
 //----------------------------------------------------------------------
@@ -107,19 +106,18 @@ NachOSThread::~NachOSThread()
 //	"arg" is a single argument to be passed to the procedure.
 //----------------------------------------------------------------------
 
-void 
-NachOSThread::ThreadFork(VoidFunctionPtr func, int arg)
-{
+void
+NachOSThread::ThreadFork(VoidFunctionPtr func, int arg) {
     DEBUG('t', "Forking thread \"%s\" with func = 0x%x, arg = %d\n",
-	  name, (int) func, arg);
-    
+          name, (int) func, arg);
+
     CreateThreadStack(func, arg);
 
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    scheduler->MoveThreadToReadyQueue(this);	// MoveThreadToReadyQueue assumes that interrupts 
-					// are disabled!
+    scheduler->MoveThreadToReadyQueue(this);    // MoveThreadToReadyQueue assumes that interrupts
+    // are disabled!
     (void) interrupt->SetLevel(oldLevel);
-}    
+}
 
 //----------------------------------------------------------------------
 // NachOSThread::CheckOverflow
@@ -137,13 +135,12 @@ NachOSThread::ThreadFork(VoidFunctionPtr func, int arg)
 //----------------------------------------------------------------------
 
 void
-NachOSThread::CheckOverflow()
-{
+NachOSThread::CheckOverflow() {
     if (stack != NULL)
-#ifdef HOST_SNAKE			// Stacks grow upward on the Snakes
-	ASSERT(stack[StackSize - 1] == STACK_FENCEPOST);
+#ifdef HOST_SNAKE            // Stacks grow upward on the Snakes
+        ASSERT(stack[StackSize - 1] == STACK_FENCEPOST);
 #else
-	ASSERT(*stack == STACK_FENCEPOST);
+        ASSERT(*stack == STACK_FENCEPOST);
 #endif
 }
 
@@ -163,13 +160,12 @@ NachOSThread::CheckOverflow()
 //----------------------------------------------------------------------
 
 void
-NachOSThread::FinishThread ()
-{
+NachOSThread::FinishThread() {
     (void) interrupt->SetLevel(IntOff);
     ASSERT(this == currentThread);
-    
+
     DEBUG('t', "Finishing thread \"%s\"\n", getName());
-    
+
     threadToBeDestroyed = currentThread;
     /* ----------------------- CUSTOM ----------------------- */
     numThreadsCurrent--;
@@ -213,22 +209,22 @@ NachOSThread::FinishThread ()
 //----------------------------------------------------------------------
 
 void
-NachOSThread::YieldCPU ()
-{
+NachOSThread::YieldCPU() {
     NachOSThread *nextThread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    
+
     ASSERT(this == currentThread);
-    
+
     DEBUG('t', "Yielding thread \"%s\"\n", getName());
-    
+
     nextThread = scheduler->SelectNextReadyThread();
     if (nextThread != NULL) {
-	scheduler->MoveThreadToReadyQueue(this);
-	scheduler->ScheduleThread(nextThread);
+        scheduler->MoveThreadToReadyQueue(this);
+        scheduler->ScheduleThread(nextThread);
     }
     (void) interrupt->SetLevel(oldLevel);
 }
+
 
 //----------------------------------------------------------------------
 // NachOSThread::PutThreadToSleep
@@ -250,19 +246,18 @@ NachOSThread::YieldCPU ()
 //	off the ready list, and switching to it.
 //----------------------------------------------------------------------
 void
-NachOSThread::PutThreadToSleep ()
-{
+NachOSThread::PutThreadToSleep() {
     NachOSThread *nextThread;
-    
+
     ASSERT(this == currentThread);
     ASSERT(interrupt->getLevel() == IntOff);
-    
+
     DEBUG('t', "Sleeping thread \"%s\"\n", getName());
 
     status = BLOCKED;
     while ((nextThread = scheduler->SelectNextReadyThread()) == NULL)
-	interrupt->Idle();	// no one to run, wait for an interrupt
-        
+        interrupt->Idle();    // no one to run, wait for an interrupt
+
     scheduler->ScheduleThread(nextThread); // returns when we've been signalled
 }
 
@@ -274,9 +269,16 @@ NachOSThread::PutThreadToSleep ()
 //	member function.
 //----------------------------------------------------------------------
 
-static void ThreadFinish()    { currentThread->FinishThread(); }
+static void ThreadFinish() { currentThread->FinishThread(); }
+
+
 static void InterruptEnable() { interrupt->Enable(); }
-void ThreadPrint(int arg){ NachOSThread *t = (NachOSThread *)arg; t->Print(); }
+
+
+void ThreadPrint(int arg) {
+    NachOSThread *t = (NachOSThread *) arg;
+    t->Print();
+}
 
 //----------------------------------------------------------------------
 // NachOSThread::CreateThreadStack
@@ -291,8 +293,7 @@ void ThreadPrint(int arg){ NachOSThread *t = (NachOSThread *)arg; t->Print(); }
 //----------------------------------------------------------------------
 
 void
-NachOSThread::CreateThreadStack (VoidFunctionPtr func, int arg)
-{
+NachOSThread::CreateThreadStack(VoidFunctionPtr func, int arg) {
     stack = (int *) AllocBoundedArray(StackSize * sizeof(int));
 
 #ifdef HOST_SNAKE
@@ -305,7 +306,7 @@ NachOSThread::CreateThreadStack (VoidFunctionPtr func, int arg)
     // SPARC stack must contains at least 1 activation record to start with.
     stackTop = stack + StackSize - 96;
 #else  // HOST_MIPS  || HOST_i386
-    stackTop = stack + StackSize - 4;	// -4 to be on the safe side!
+    stackTop = stack + StackSize - 4;    // -4 to be on the safe side!
 #ifdef HOST_i386
     // the 80386 passes the return address on the stack.  In order for
     // SWITCH() to go to ThreadRoot when we switch to this thread, the
@@ -316,13 +317,14 @@ NachOSThread::CreateThreadStack (VoidFunctionPtr func, int arg)
 #endif  // HOST_SPARC
     *stack = STACK_FENCEPOST;
 #endif  // HOST_SNAKE
-    
+
     machineState[PCState] = (int) _ThreadRoot;
     machineState[StartupPCState] = (int) InterruptEnable;
     machineState[InitialPCState] = (int) func;
     machineState[InitialArgState] = arg;
     machineState[WhenDonePCState] = (int) ThreadFinish;
 }
+
 
 #ifdef USER_PROGRAM
 #include "machine.h"
@@ -341,7 +343,7 @@ NachOSThread::SaveUserState()
 {
     if (stateRestored) {
        for (int i = 0; i < NumTotalRegs; i++)
-	  userRegisters[i] = machine->ReadRegister(i);
+      userRegisters[i] = machine->ReadRegister(i);
        stateRestored = false;
     }
 }
@@ -350,8 +352,8 @@ NachOSThread::SaveUserState()
 // NachOSThread::RestoreUserState
 //	Restore the CPU state of a user program on a context switch.
 //
-//	Note that a user program thread has *two* sets of CPU registers -- 
-//	one for its state while executing user code, one for its state 
+//	Note that a user program thread has *two* sets of CPU registers --
+//	one for its state while executing user code, one for its state
 //	while executing kernel code.  This routine restores the former.
 //----------------------------------------------------------------------
 
@@ -359,15 +361,15 @@ void
 NachOSThread::RestoreUserState()
 {
     for (int i = 0; i < NumTotalRegs; i++)
-	machine->WriteRegister(i, userRegisters[i]);
+    machine->WriteRegister(i, userRegisters[i]);
     stateRestored = true;
 }
 #endif
 
+
 /* ----------------------- CUSTOM ----------------------- */
 void
-NachOSThread::UpdateParent(NachOSThread *parentThread)
-{
+NachOSThread::UpdateParent(NachOSThread *parentThread) {
     parent = parentThread;
 
     if (parent == NULL) {
@@ -378,23 +380,23 @@ NachOSThread::UpdateParent(NachOSThread *parentThread)
     }
 }
 
+
 void
-NachOSThread::AddChild(NachOSThread* childThread)
-{
-    childQueue->SortedInsert((void *)childThread, childThread->GetPID());
+NachOSThread::AddChild(NachOSThread *childThread) {
+    childQueue->SortedInsert((void *) childThread, childThread->GetPID());
 }
 
+
 void
-NachOSThread::AddChildExitCode(int exCode, int cpid)
-{
-    childExitCodeQueue->SortedInsert((void *)exCode, cpid);
+NachOSThread::AddChildExitCode(int exCode, int cpid) {
+    childExitCodeQueue->SortedInsert((void *) exCode, cpid);
 
 }
 
+
 void
-NachOSThread::WakeUpThread(int childPID)
-{
-    if(this->waitingThreadPID == childPID){
+NachOSThread::WakeUpThread(int childPID) {
+    if (this->waitingThreadPID == childPID) {
         waitingThreadPID = -1;
 
 #ifdef USER_PROGRAM
@@ -406,17 +408,17 @@ NachOSThread::WakeUpThread(int childPID)
     }
 }
 
+
 void
-NachOSThread::AddExitCode(int exCode)
-{
-    if(parent!=NULL){
+NachOSThread::AddExitCode(int exCode) {
+    if (parent != NULL) {
         parent->AddChildExitCode(exCode, pid);
     }
 }
 
+
 int
-NachOSThread::GetChildExitCode(int cpid)
-{
+NachOSThread::GetChildExitCode(int cpid) {
     int exitCode = -1;
 
     List *tempQueue = new List;
@@ -425,7 +427,7 @@ NachOSThread::GetChildExitCode(int cpid)
     int curChildPID;
     while (!childQueue->IsEmpty()) {
         curChildThread = (NachOSThread *) childQueue->SortedRemove(&curChildPID);
-        tempQueue->SortedInsert((void *)curChildThread, curChildPID);
+        tempQueue->SortedInsert((void *) curChildThread, curChildPID);
         if (curChildPID == cpid) {
             exitCode = -2;
         }
@@ -438,8 +440,8 @@ NachOSThread::GetChildExitCode(int cpid)
 
     int curChildExitCode;
     while (!childExitCodeQueue->IsEmpty()) {
-        curChildExitCode = (int)childExitCodeQueue->SortedRemove(&curChildPID);
-        tempQueue->SortedInsert((void *)curChildExitCode, curChildPID);
+        curChildExitCode = (int) childExitCodeQueue->SortedRemove(&curChildPID);
+        tempQueue->SortedInsert((void *) curChildExitCode, curChildPID);
         if (curChildPID == cpid) {
             exitCode = curChildExitCode;
         }

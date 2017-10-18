@@ -40,6 +40,7 @@
 #include "copyright.h"
 #include "utility.h"
 
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "addrspace.h"
@@ -53,11 +54,13 @@
 
 // Size of the thread's private execution stack.
 // WATCH OUT IF THIS ISN'T BIG ENOUGH!!!!!
-#define StackSize	(4 * 1024)	// in words
+#define StackSize    (4 * 1024)    // in words
 
 
 // Thread state
-enum ThreadStatus { JUST_CREATED, RUNNING, READY, BLOCKED };
+enum ThreadStatus {
+    JUST_CREATED, RUNNING, READY, BLOCKED
+};
 
 
 /* ----------------------- CUSTOM ----------------------- */
@@ -82,38 +85,47 @@ class NachOSThread {
 private:
     // NOTE: DO NOT CHANGE the order of these first two members.
     // THEY MUST be in this position for SWITCH to work.
-    int* stackTop;			 // the current stack pointer
+    int *stackTop;             // the current stack pointer
     int machineState[MachineStateSize];  // all registers except for stackTop
 
 public:
-    NachOSThread(char* debugName);		// initialize a Thread
-    ~NachOSThread(); 				// deallocate a Thread
+    NachOSThread(char *debugName);        // initialize a Thread
+    ~NachOSThread();                // deallocate a Thread
     // NOTE -- thread being deleted
     // must not be running when delete
     // is called
 
     // basic thread operations
 
-    void ThreadFork(VoidFunctionPtr func, int arg); 	// Make thread run (*func)(arg)
-    void YieldCPU();  				// Relinquish the CPU if any
+    void ThreadFork(VoidFunctionPtr func, int arg);    // Make thread run (*func)(arg)
+    void YieldCPU();                // Relinquish the CPU if any
     // other thread is runnable
-    void PutThreadToSleep();  				// Put the thread to sleep and
+    void PutThreadToSleep();                // Put the thread to sleep and
     // relinquish the processor
-    void FinishThread();  				// The thread is done executing
+    void FinishThread();                // The thread is done executing
 
-    void CheckOverflow();   			// Check if thread has
+    void CheckOverflow();            // Check if thread has
     // overflowed its stack
     void setStatus(ThreadStatus st) { status = st; }
-    char* getName() { return (name); }
+
+
+    char *getName() { return (name); }
+
+
     void Print() { printf("%s, ", name); }
+
 
     /* ----------------------- CUSTOM ----------------------- */
     int GetPID() { return pid; }
+
+
     int GetPPID() { return ppid; }
+
 
     void UpdateParent(NachOSThread *parentThread);
 
     void AddChild(NachOSThread *childThread);
+
     void AddChildExitCode(int exCode, int cpid);
 
     void AddExitCode(int exCode);
@@ -122,7 +134,9 @@ public:
 
     void WakeUpThread(int childPID);
 
-    void UpdateWaitingThreadPID(int cpid){ waitingThreadPID = cpid; }
+
+    void UpdateWaitingThreadPID(int cpid) { waitingThreadPID = cpid; }
+
 
 #ifdef USER_PROGRAM
     void UpdateRegisterValue(int value, int reg) { userRegisters[reg] = value; }
@@ -134,17 +148,17 @@ public:
 private:
     // some of the private data for this class is listed above
 
-    int* stack; 	 		// Bottom of the stack
+    int *stack;            // Bottom of the stack
     // NULL if this is the main thread
     // (If NULL, don't deallocate stack)
-    ThreadStatus status;		// ready, running or blocked
-    char* name;
+    ThreadStatus status;        // ready, running or blocked
+    char *name;
 
     void CreateThreadStack(VoidFunctionPtr func, int arg);
     // Allocate a stack for thread.
     // Used internally by ThreadFork()
 
-    int pid, ppid;			// My pid and my parent's pid
+    int pid, ppid;            // My pid and my parent's pid
 
     /* ----------------------- CUSTOM ----------------------- */
     NachOSThread *parent;    // My parent thread

@@ -48,23 +48,52 @@
 
 #define MAIN
 #include "copyright.h"
+
+
 #undef MAIN
 
 #include "utility.h"
 #include "system.h"
 #include <stdio.h>
-//#include <stdlib.h>
-
-//#include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
 // External functions used by this file
 
 extern void ThreadTest(void), Copy(char *unixFile, char *nachosFile);
+
 extern void Print(char *file), PerformanceTest(void);
+
 extern void LaunchUserProcess(char *file), ConsoleTest(char *in, char *out);
+
 extern void MailTest(int networkID);
+
+
+/* ----------------------- CUSTOM ----------------------- */
+extern void fork_init_func(int arg);
+
+
+int GetFileNameLength(char *c) {
+    int l = 0;
+    while (c[l] != ' ' && c[l] != '\t' && c[l] != '\0') {
+        l++;
+    }
+    return l;
+}
+
+
+int GetPriority(char *c) {
+    int i = 0;
+    while (c[i] == ' ' && c[i] != '\t') i++;
+
+    int priority = 0;
+    while (c[i] != '\0') {
+        priority = priority * 10 + (c[i++] - '0');
+    }
+
+    return priority;
+}
+/* ----------------------- CUSTOM ----------------------- */
 
 //----------------------------------------------------------------------
 // main
@@ -80,149 +109,134 @@ extern void MailTest(int networkID);
 //		ex: "nachos -d +" -> argv = {"nachos", "-d", "+"}
 //----------------------------------------------------------------------
 
-int checkdigit(char* c){
-	int i = 0;
-	while(c[i]!='\0'){
-		if(isdigit(c[i])==0) return 0;
-		else i++;
-	}
-	return 1;
-}
-
-main(int argc, char **argv)
-{
-    int argCount;			// the number of arguments 
-					// for a particular command
+main(int argc, char **argv) {
+    int argCount;            // the number of arguments 
+    // for a particular command
 
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
-    
+
 #ifdef THREADS
     ThreadTest();
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
-	argCount = 1;
+        argCount = 1;
         if (!strcmp(*argv, "-z"))               // print copyright
-            printf (copyright);
+            printf(copyright);
+
 #ifdef USER_PROGRAM
-        if (!strcmp(*argv, "-x")) {        	// run a user program
-	    ASSERT(argc > 1);
+        if (!strcmp(*argv, "-x")) {            // run a user program
+            ASSERT(argc > 1);
             LaunchUserProcess(*(argv + 1));
             argCount = 2;
-        } else if (!strcmp(*argv, "-c")) {      // test the console
-	    if (argc == 1)
-	        ConsoleTest(NULL, NULL);
-	    else {
-		ASSERT(argc > 2);
-	        ConsoleTest(*(argv + 1), *(argv + 2));
-	        argCount = 3;
-	    }
-	    interrupt->Halt();		// once we start the console, then 
-					// Nachos will loop forever waiting 
-					// for console input
-//---------------------------------------------------------------
-	} else if (!strcmp(*argv, "-F")) {      
-		FILE *f;
-	    	char c;
-	    	f=fopen(argv[1],"rt");
+        }
+        else if (!strcmp(*argv, "-c")) {      // test the console
+            if (argc == 1)
+                ConsoleTest(NULL, NULL);
+            else {
+                ASSERT(argc > 2);
+                ConsoleTest(*(argv + 1), *(argv + 2));
+                argCount = 3;
+            }
+            interrupt->Halt();        // once we start the console, then
+            // Nachos will loop forever waiting
+            // for console input
+        }
+        /* ----------------------- CUSTOM ----------------------- */
+        else if (!strcmp(*argv, "-F")) {
+            FILE *f;
+            char c;
+            f = fopen(argv[1], "rt");
 
-	    	char x[1024],name[1024];
-	    	int i = 0,prty,k = 0;
-		int n = 0;
-		char snum[5];
-	    	while (fscanf(f, " %1023s", x) == 1) {
-	        	// if(i==0) name = x;
-			//printf("%s\n",x);
-	        	k = checkdigit(x);
-      			if(i==0){
-      				strcpy(name, x);
-        			i=1;
-      			}
-      			else if(i==1){
-				//printf("------------------------------------%s\n",name);
-				OpenFile *executable = fileSystem->Open(name);
-				ProcessAddressSpace *space;
-				if (executable == NULL) {
-					printf("Unable to open file %s\n", name);
-					continue;
-				}
-				space = new ProcessAddressSpace(executable);
-				delete executable;
-				sprintf(snum, "%d", n);//itoa(n, snum, 10);
-				NachOSThread *newThread = new NachOSThread(snum);
-				newThread->space = space;
-				space->InitUserModeCPURegisters();
-				space->RestoreContextOnSwitch();
-      				if(k==1){
-      					prty = atoi(x);
-      					printf("%s     %d\n",name,prty);
-      					i=0;
-					IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    					scheduler->MoveThreadToReadyQueue(newThread);	// MoveThreadToReadyQueue assumes that interrupts 
-						// are disabled!
-    					(void) interrupt->SetLevel(oldLevel);
-      				}
-      				else{
-      					printf("%s\n",name);
-      					i=1;
-					IntStatus oldLevel = interrupt->SetLevel(IntOff);
-    					scheduler->MoveThreadToReadyQueue(newThread);	// MoveThreadToReadyQueue assumes that interrupts 
-						// are disabled!
-    					(void) interrupt->SetLevel(oldLevel);
-				        strcpy(name, x);		
-      				}
-				//i = 0;
-			}  
-	 	}	
-		printf("ASDad");
-		//fclose(f);
-	  }
-	
-//-----------------------------------------------------------------
+            char name_pr[1024];
+            int priority, l;
+
+            while (fscanf(f, "%[^\n]\n", name_pr) != EOF) {
+                l = GetFileNameLength(name_pr);
+
+                char name[l+1];
+                strncpy(name, name_pr, l);
+                name[l] = '\0';
+
+                OpenFile *executable = fileSystem->Open(name);
+                ProcessAddressSpace *spc;
+                if (executable == NULL) {
+                    printf("Unable to open file %s\n", name);
+                    continue;
+                }
+                spc = new ProcessAddressSpace(executable);
+                spc->InitUserModeCPURegisters();
+//                spc->RestoreContextOnSwitch();
+
+                delete executable;
+
+                NachOSThread *newThread = new NachOSThread(name);
+                newThread->space = spc;
+                newThread->SaveUserState();
+                newThread->ThreadFork(fork_init_func, 0);
+
+                printf("%d\n", newThread->GetPID());
+
+//                IntStatus oldLevel = interrupt->SetLevel(IntOff);
+//                if (name_pr[l] == '\0') {
+//                    scheduler->MoveThreadToReadyQueue(newThread);
+//                }
+//                else {
+//                    priority = GetPriority(name_pr + l);
+//                    scheduler->MoveThreadToReadyQueue(newThread);
+//                }
+//                (void) interrupt->SetLevel(oldLevel);
+            }
+            fclose(f);
+        }
 #endif // USER_PROGRAM
+    }
+    /* ----------------------- CUSTOM ----------------------- */
 #ifdef FILESYS
-	if (!strcmp(*argv, "-cp")) { 		// copy from UNIX to Nachos
-	    ASSERT(argc > 2);
-	    Copy(*(argv + 1), *(argv + 2));
-	    argCount = 3;
-	} else if (!strcmp(*argv, "-p")) {	// print a Nachos file
-	    ASSERT(argc > 1);
-	    Print(*(argv + 1));
-	    argCount = 2;
-	} else if (!strcmp(*argv, "-r")) {	// remove Nachos file
-	    ASSERT(argc > 1);
-	    fileSystem->Remove(*(argv + 1));
-	    argCount = 2;
-	} else if (!strcmp(*argv, "-l")) {	// list Nachos directory
-            fileSystem->List();
-	} else if (!strcmp(*argv, "-D")) {	// print entire filesystem
-            fileSystem->Print();
-	} else if (!strcmp(*argv, "-t")) {	// performance test
-            PerformanceTest();
-	}
+    if (!strcmp(*argv, "-cp")) {        // copy from UNIX to Nachos
+        ASSERT(argc > 2);
+        Copy(*(argv + 1), *(argv + 2));
+        argCount = 3;
+    }
+    else if (!strcmp(*argv, "-p")) {    // print a Nachos file
+        ASSERT(argc > 1);
+        Print(*(argv + 1));
+        argCount = 2;
+    }
+    else if (!strcmp(*argv, "-r")) {    // remove Nachos file
+        ASSERT(argc > 1);
+        fileSystem->Remove(*(argv + 1));
+        argCount = 2;
+    }
+    else if (!strcmp(*argv, "-l")) {    // list Nachos directory
+        fileSystem->List();
+    }
+    else if (!strcmp(*argv, "-D")) {    // print entire filesystem
+        fileSystem->Print();
+    }
+    else if (!strcmp(*argv, "-t")) {    // performance test
+        PerformanceTest();
+    }
 #endif // FILESYS
 #ifdef NETWORK
-        if (!strcmp(*argv, "-o")) {
-	    ASSERT(argc > 1);
-            Delay(2); 				// delay for 2 seconds
-						// to give the user time to 
-						// start up another nachos
-            MailTest(atoi(*(argv + 1)));
-            argCount = 2;
-        }
-#endif // NETWORK
+    if (!strcmp(*argv, "-o")) {
+        ASSERT(argc > 1);
+        Delay(2);                // delay for 2 seconds
+        // to give the user time to
+        // start up another nachos
+        MailTest(atoi(*(argv + 1)));
+        argCount = 2;
     }
+#endif // NETWORK
 
-    currentThread->FinishThread();	// NOTE: if the procedure "main" 
-				// returns, then the program "nachos"
-				// will exit (as any other normal program
-				// would).  But there may be other
-				// threads on the ready list.  We switch
-				// to those threads by saying that the
-				// "main" thread is finished, preventing
-				// it from returning.
-    return(0);			// Not reached...
+    currentThread->FinishThread();    // NOTE: if the procedure "main"
+    // returns, then the program "nachos"
+    // will exit (as any other normal program
+    // would).  But there may be other
+    // threads on the ready list.  We switch
+    // to those threads by saying that the
+    // "main" thread is finished, preventing
+    // it from returning.
+    return 0;            // Not reached...
 }
-
-

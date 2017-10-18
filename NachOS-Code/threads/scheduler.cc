@@ -27,20 +27,18 @@
 // 	Initialize the list of ready but not running threads to empty.
 //----------------------------------------------------------------------
 
-ProcessScheduler::ProcessScheduler()
-{ 
-    listOfReadyThreads = new List; 
-} 
+ProcessScheduler::ProcessScheduler() {
+    listOfReadyThreads = new List;
+}
 
 //----------------------------------------------------------------------
 // ProcessScheduler::~ProcessScheduler
 // 	De-allocate the list of ready threads.
 //----------------------------------------------------------------------
 
-ProcessScheduler::~ProcessScheduler()
-{ 
-    delete listOfReadyThreads; 
-} 
+ProcessScheduler::~ProcessScheduler() {
+    delete listOfReadyThreads;
+}
 
 //----------------------------------------------------------------------
 // ProcessScheduler::MoveThreadToReadyQueue
@@ -51,12 +49,11 @@ ProcessScheduler::~ProcessScheduler()
 //----------------------------------------------------------------------
 
 void
-ProcessScheduler::MoveThreadToReadyQueue (NachOSThread *thread)
-{
+ProcessScheduler::MoveThreadToReadyQueue(NachOSThread *thread) {
     DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
-    listOfReadyThreads->Append((void *)thread);
+    listOfReadyThreads->Append((void *) thread);
 }
 
 //----------------------------------------------------------------------
@@ -68,9 +65,8 @@ ProcessScheduler::MoveThreadToReadyQueue (NachOSThread *thread)
 //----------------------------------------------------------------------
 
 NachOSThread *
-ProcessScheduler::SelectNextReadyThread ()
-{
-    return (NachOSThread *)listOfReadyThreads->Remove();
+ProcessScheduler::SelectNextReadyThread() {
+    return (NachOSThread *) listOfReadyThreads->Remove();
 }
 
 //----------------------------------------------------------------------
@@ -88,52 +84,51 @@ ProcessScheduler::SelectNextReadyThread ()
 //----------------------------------------------------------------------
 
 void
-ProcessScheduler::ScheduleThread (NachOSThread *nextThread)
-{
-    printf("Here!!!!!!");
+ProcessScheduler::ScheduleThread(NachOSThread *nextThread) {
     NachOSThread *oldThread = currentThread;
-    
-#ifdef USER_PROGRAM			// ignore until running user programs 
+
+#ifdef USER_PROGRAM            // ignore until running user programs
     if (currentThread->space != NULL) {	// if this thread is a user program,
         currentThread->SaveUserState(); // save the user's CPU registers
-	currentThread->space->SaveContextOnSwitch();
+    currentThread->space->SaveContextOnSwitch();
     }
 #endif
-    
-    oldThread->CheckOverflow();		    // check if the old thread
-					    // had an undetected stack overflow
 
-    currentThread = nextThread;		    // switch to the next thread
+    oldThread->CheckOverflow();            // check if the old thread
+    // had an undetected stack overflow
+
+    currentThread = nextThread;            // switch to the next thread
     currentThread->setStatus(RUNNING);      // nextThread is now running
-    
+
     DEBUG('t', "Switching from thread \"%s\" to thread \"%s\"\n",
-	  oldThread->getName(), nextThread->getName());
-    
-    // This is a machine-dependent assembly language routine defined 
+          oldThread->getName(), nextThread->getName());
+
+    // This is a machine-dependent assembly language routine defined
     // in switch.s.  You may have to think
     // a bit to figure out what happens after this, both from the point
     // of view of the thread and from the perspective of the "outside world".
 
     _SWITCH(oldThread, nextThread);
-    
-    DEBUG('t', "Now in thread \"%s\"\n", currentThread->getName());
 
-    // If the old thread gave up the processor because it was finishing,
-    // we need to delete its carcass.  Note we cannot delete the thread
-    // before now (for example, in NachOSThread::FinishThread()), because up to this
-    // point, we were still running on the old thread's stack!
-    if (threadToBeDestroyed != NULL) {
-        delete threadToBeDestroyed;
-	threadToBeDestroyed = NULL;
-    }
-    
-#ifdef USER_PROGRAM
-    if (currentThread->space != NULL) {		// if there is an address space
-        currentThread->RestoreUserState();     // to restore, do it.
-	currentThread->space->RestoreContextOnSwitch();
-    }
-#endif
+//    DEBUG('t', "Now in thread \"%s\"\n", currentThread->getName());
+//
+//    // If the old thread gave up the processor because it was finishing,
+//    // we need to delete its carcass.  Note we cannot delete the thread
+//    // before now (for example, in NachOSThread::FinishThread()), because up to this
+//    // point, we were still running on the old thread's stack!
+//    if (threadToBeDestroyed != NULL) {
+//        delete threadToBeDestroyed;
+//        threadToBeDestroyed = NULL;
+//    }
+//
+//#ifdef USER_PROGRAM
+//    if (currentThread->space != NULL) {		// if there is an address space
+//        currentThread->RestoreUserState();     // to restore, do it.
+//    currentThread->space->RestoreContextOnSwitch();
+//    }
+//#endif
 }
+
 
 //----------------------------------------------------------------------
 // ProcessScheduler::Print
@@ -141,8 +136,7 @@ ProcessScheduler::ScheduleThread (NachOSThread *nextThread)
 //	the ready list.  For debugging.
 //----------------------------------------------------------------------
 void
-ProcessScheduler::Print()
-{
+ProcessScheduler::Print() {
     printf("Ready list contents:\n");
     listOfReadyThreads->Mapcar((VoidFunctionPtr) ThreadPrint);
 }
