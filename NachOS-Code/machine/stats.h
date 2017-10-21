@@ -35,7 +35,10 @@ public:
     int numPageFaults;        // number of virtual memory page faults
     int numPacketsSent;        // number of packets sent over the network
     int numPacketsRecvd;    // number of packets received over the network
-
+    //======================== CUSTOM 2 ===========================
+    int total_wait;
+    int total_burst;
+    //============================ CUSTOM 2 =================
     Statistics();        // initialize everything to zero
 
     void Print();        // print collected statistics

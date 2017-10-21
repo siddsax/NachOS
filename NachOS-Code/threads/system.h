@@ -22,7 +22,7 @@ extern void Initialize(int argc, char **argv);    // Initialization,
 // called before anything else
 extern void Cleanup();                // Cleanup, called when
 // Nachos is done.
-
+//#define MAXTHREAD 1000
 extern NachOSThread *currentThread;            // the thread holding the CPU
 extern NachOSThread *threadToBeDestroyed;        // the thread that just finished
 extern ProcessScheduler *scheduler;            // the thread scheduler
@@ -35,12 +35,16 @@ extern bool initializedConsoleSemaphores;       // Used to initialize the semaph
 /* ----------------------- CUSTOM ----------------------- */
 extern int numThreadsCreated;
 extern int numThreadsCurrent;
-
 extern int numTotalPages;
 
 extern List *waitingQueue;
 /* ----------------------- CUSTOM ----------------------- */
-
+//========================= CUSTOM 2 ==================================
+extern int scheduler_type;
+extern float alpha;
+//extern float total_wait;
+//extern float total_burst;
+//=======================================CUSTOM   2=====================
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers

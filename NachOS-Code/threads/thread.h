@@ -76,6 +76,7 @@ extern void ThreadPrint(int arg);
 //  Every thread has:
 //     an execution stack for activation records ("stackTop" and "stack")
 //     space to save CPU registers while not running ("machineState")
+
 //     a "status" (running/ready/blocked)
 //
 //  Some threads also belong to a user address space; threads
@@ -103,10 +104,10 @@ public:
     void PutThreadToSleep();                // Put the thread to sleep and
     // relinquish the processor
     void FinishThread();                // The thread is done executing
-
+   
     void CheckOverflow();            // Check if thread has
     // overflowed its stack
-    void setStatus(ThreadStatus st) { status = st; }
+    void setStatus(ThreadStatus st);
 
 
     char *getName() { return (name); }
@@ -114,10 +115,19 @@ public:
 
     void Print() { printf("%s, ", name); }
 
+    //===========================CUSTOM====================
 
+    int start_burst_tic;
+    int est_burst_time; 
+   
+    
+    //int wait_time;
+    int wait_time_start;
+    int total_burst_t;
+    int total_wait_t;
+    //==========================CUSTOM 2 =================
     /* ----------------------- CUSTOM ----------------------- */
     int GetPID() { return pid; }
-
 
     int GetPPID() { return ppid; }
 

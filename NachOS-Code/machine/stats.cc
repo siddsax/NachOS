@@ -21,8 +21,13 @@ Statistics::Statistics() {
     numDiskReads = numDiskWrites = 0;
     numConsoleCharsRead = numConsoleCharsWritten = 0;
     numPageFaults = numPacketsSent = numPacketsRecvd = 0;
+    total_wait = 0;
+    total_burst = 0;
+
 }
 
+
+//Statistics::
 //----------------------------------------------------------------------
 // Statistics::Print
 // 	Print performance metrics, when we've finished everything
@@ -39,4 +44,8 @@ Statistics::Print() {
     printf("Paging: faults %d\n", numPageFaults);
     printf("Network I/O: packets received %d, sent %d\n", numPacketsRecvd,
            numPacketsSent);
+//============================ CUSTOM 2 ======================
+    printf(" total time waited = %d, total time in burst = %d\n", total_wait,total_burst);
+//============================= CUSTOM 2===============
+
 }
