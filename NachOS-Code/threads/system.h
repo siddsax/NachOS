@@ -38,13 +38,12 @@ extern int numThreadsCurrent;
 extern int numTotalPages;
 
 extern List *waitingQueue;
-/* ----------------------- CUSTOM ----------------------- */
-//========================= CUSTOM 2 ==================================
-extern int scheduler_type;
+
+extern int schedulerType;
 extern float alpha;
 //extern float total_wait;
 //extern float total_burst;
-//=======================================CUSTOM   2=====================
+/* ----------------------- CUSTOM ----------------------- */
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers

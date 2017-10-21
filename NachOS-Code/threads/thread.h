@@ -115,18 +115,15 @@ public:
 
     void Print() { printf("%s, ", name); }
 
-    //===========================CUSTOM====================
+    /* ----------------------- CUSTOM ----------------------- */
 
     int start_burst_tic;
     int est_burst_time; 
-   
-    
+
     //int wait_time;
     int wait_time_start;
     int total_burst_t;
     int total_wait_t;
-    //==========================CUSTOM 2 =================
-    /* ----------------------- CUSTOM ----------------------- */
     int GetPID() { return pid; }
 
     int GetPPID() { return ppid; }
@@ -153,6 +150,10 @@ public:
 #endif
 
     int numInstr;
+
+    void CreateThreadStack(VoidFunctionPtr func, int arg);
+    // Allocate a stack for thread.
+    // Used internally by ThreadFork()
     /* ----------------------- CUSTOM ----------------------- */
 
 private:
@@ -163,10 +164,6 @@ private:
     // (If NULL, don't deallocate stack)
     ThreadStatus status;        // ready, running or blocked
     char *name;
-
-    void CreateThreadStack(VoidFunctionPtr func, int arg);
-    // Allocate a stack for thread.
-    // Used internally by ThreadFork()
 
     int pid, ppid;            // My pid and my parent's pid
 

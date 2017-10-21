@@ -149,10 +149,10 @@ main(int argc, char **argv) {
             char c;
             f = fopen(argv[1], "rt");
 
-            char name_pr[1024];
+            char line[1024];
             int priority, l;
 
-            while (fscanf(f, "%[^\n]\n", name_pr) != EOF) {
+            while (fscanf(f, "%[^\n]\n", line) != EOF) {
                 l = GetFileNameLength(line);
 
                 char filename[l+1];
@@ -177,7 +177,7 @@ main(int argc, char **argv) {
                 newThread->space = space;
                 newThread->SaveUserState();
 
-                newThread->CreateThreadStack(fork_func, 0);
+                newThread->CreateThreadStack(fork_init_func, 0);
                 scheduler->MoveThreadToReadyQueue(newThread);
 
 //                IntStatus oldLevel = interrupt->SetLevel(IntOff);
@@ -190,6 +190,7 @@ main(int argc, char **argv) {
 //                }
 //                (void) interrupt->SetLevel(oldLevel);
             }
+            currentThread->AddExitCode(0);
             fclose(f);
         }
 #endif // USER_PROGRAM

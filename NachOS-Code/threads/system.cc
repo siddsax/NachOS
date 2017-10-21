@@ -24,19 +24,15 @@ int numThreadsCreated = 0;
 int numThreadsCurrent = 0;
 
 int numTotalPages = 0;
-int scheduler_type = 1;
+int schedulerType = 1;
 List *waitingQueue = new List;
 //float burst_time[MAXTHREAD];
 
-/* ----------------------- CUSTOM ----------------------- */
-
-
-//=================== CUSTOM 2===========================
 float alpha = .7;
 //float total_wait = 0;
 //float total_burst = 0;
+/* ----------------------- CUSTOM ----------------------- */
 
-//======================CUSTOM 2=====================
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
 #endif
@@ -109,10 +105,10 @@ TimerInterruptHandler(int dummy) {
     wakeSleepingThreads();
 
     if (interrupt->getStatus() != IdleMode)
-       if(scheduler_type==1 || scheduler_type==2){}
-       else{ 
-          interrupt->YieldOnReturn();
-       }
+        if (schedulerType == 1 || schedulerType == 2) {}
+        else {
+            interrupt->YieldOnReturn();
+        }
 }
 
 

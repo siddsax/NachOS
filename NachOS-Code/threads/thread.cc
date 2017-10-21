@@ -55,17 +55,13 @@ NachOSThread::NachOSThread(char *threadName) {
     childExitCodeQueue = new List;
 
     waitingThreadPID = -1;
-    //----------------------CUSTOM------------------------------
 
-
-
-   //=====================CUSTOM    2--------------------------
     start_burst_tic = 0;
     est_burst_time = 0;
     total_burst_t = 0;
     wait_time_start = 0;
     total_wait_t = 0;
-    /* ----------------------- CUSTOM  2         ----------------------- */
+    /* ----------------------- CUSTOM ----------------------- */
 
     stackTop = NULL;
     stack = NULL;
@@ -129,67 +125,52 @@ NachOSThread::ThreadFork(VoidFunctionPtr func, int arg) {
     (void) interrupt->SetLevel(oldLevel);
 }
 
-
-void NachOSThread::setStatus(ThreadStatus st){
-//==================================CUSTOM    2===============================
-    if(status == JUST_CREATED){
-	if(st == RUNNING){
-	   start_burst_tic = stats->totalTicks;
-	}
-	else if(st == READY)
-	{
-	   wait_time_start = stats->totalTicks;
-	}
-	else("created to ?");
+/* ----------------------- CUSTOM ----------------------- */
+void NachOSThread::setStatus(ThreadStatus st) {
+    if (status == JUST_CREATED) {
+        if (st == RUNNING) {
+            start_burst_tic = stats->totalTicks;
+        }
+        else if (st == READY) {
+            wait_time_start = stats->totalTicks;
+        }
+        else("created to ?");
     }
-    else if(status == READY){
-    	if(st == RUNNING){
-	   int t  = stats->totalTicks - wait_time_start;
-	   if(t>0){
-		stats->total_wait = stats->total_wait + t;	    	
-	   	total_wait_t = total_wait_t + t;
-	   }
-	   start_burst_tic = stats->totalTicks;
-	}
-	else printf("ready to ?");
-   }
-   else if(status == RUNNING ){
-	if(scheduler_type==2){	
-		est_burst_time = (int)(est_burst_time*(1-alpha) + alpha*(stats->totalTicks - start_burst_tic));
-	}
-	total_burst_t = total_burst_t + (stats->totalTicks -start_burst_tic);
-	stats->total_burst = stats->total_burst + (stats->totalTicks -start_burst_tic);
-	if(st == READY){
-	    wait_time_start = stats->totalTicks; 
-	}
-	else printf("run to blocked/error");
-   }
-   else if(status == BLOCKED){
-	if(st == RUNNING){
-	   start_burst_tic = stats->totalTicks;
-	} 
-	else if	(st == READY){
-	   wait_time_start = stats->totalTicks; 
-	}
-	else {
-	   printf("blocked to ?");
-	}
-   }	   
+    else if (status == READY) {
+        if (st == RUNNING) {
+            int t = stats->totalTicks - wait_time_start;
+            if (t > 0) {
+                stats->total_wait = stats->total_wait + t;
+                total_wait_t = total_wait_t + t;
+            }
+            start_burst_tic = stats->totalTicks;
+        }
+        else printf("ready to ?");
+    }
+    else if (status == RUNNING) {
+        if (schedulerType == 2) {
+            est_burst_time = (int) (est_burst_time * (1 - alpha) + alpha * (stats->totalTicks - start_burst_tic));
+        }
+        total_burst_t = total_burst_t + (stats->totalTicks - start_burst_tic);
+        stats->total_burst = stats->total_burst + (stats->totalTicks - start_burst_tic);
+        if (st == READY) {
+            wait_time_start = stats->totalTicks;
+        }
+        else printf("run to blocked/error");
+    }
+    else if (status == BLOCKED) {
+        if (st == RUNNING) {
+            start_burst_tic = stats->totalTicks;
+        }
+        else if (st == READY) {
+            wait_time_start = stats->totalTicks;
+        }
+        else {
+            printf("blocked to ?");
+        }
+    }
 }
-
-
-
-
-
-//------------------------------------------------------------------------
-
-
-
-
-
-
-
-
+/* ----------------------- CUSTOM ----------------------- */
 
 
 //----------------------------------------------------------------------
@@ -258,12 +239,11 @@ NachOSThread::FinishThread() {
 
 
     if (parent != NULL) { parent->WakeUpThread(this->GetPID()); }
-    /* ----------------------- CUSTOM ----------------------- */
 
-    //======================= CUSTOM =============================/
     total_burst_t = total_burst_t + (stats->totalTicks -start_burst_tic);
     stats->total_burst = stats->total_burst + (stats->totalTicks -start_burst_tic);
-        
+    /* ----------------------- CUSTOM ----------------------- */
+
     threadToBeDestroyed->PutThreadToSleep();
 }
 
