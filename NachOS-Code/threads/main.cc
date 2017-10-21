@@ -153,30 +153,32 @@ main(int argc, char **argv) {
             int priority, l;
 
             while (fscanf(f, "%[^\n]\n", name_pr) != EOF) {
-                l = GetFileNameLength(name_pr);
+                l = GetFileNameLength(line);
 
-                char name[l+1];
-                strncpy(name, name_pr, l);
-                name[l] = '\0';
+                char filename[l+1];
+                strncpy(filename, line, l);
+                filename[l] = '\0';
 
-                OpenFile *executable = fileSystem->Open(name);
-                ProcessAddressSpace *spc;
+                OpenFile *executable = fileSystem->Open(filename);
+                ProcessAddressSpace *space;
+
                 if (executable == NULL) {
-                    printf("Unable to open file %s\n", name);
+                    printf("Unable to open file %s\n", filename);
                     continue;
                 }
-                spc = new ProcessAddressSpace(executable);
-                spc->InitUserModeCPURegisters();
-//                spc->RestoreContextOnSwitch();
+                space = new ProcessAddressSpace(executable);
 
                 delete executable;
 
-                NachOSThread *newThread = new NachOSThread(name);
-                newThread->space = spc;
-                newThread->SaveUserState();
-                newThread->ThreadFork(fork_init_func, 0);
+                space->InitUserModeCPURegisters();
+//                space->RestoreContextOnSwitch();
 
-                printf("%d\n", newThread->GetPID());
+                NachOSThread *newThread = new NachOSThread(filename);
+                newThread->space = space;
+                newThread->SaveUserState();
+
+                newThread->CreateThreadStack(fork_func, 0);
+                scheduler->MoveThreadToReadyQueue(newThread);
 
 //                IntStatus oldLevel = interrupt->SetLevel(IntOff);
 //                if (name_pr[l] == '\0') {
