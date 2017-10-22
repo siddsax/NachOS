@@ -53,7 +53,16 @@ ProcessScheduler::MoveThreadToReadyQueue(NachOSThread *thread) {
     DEBUG('t', "Putting thread %s on ready list.\n", thread->getName());
 
     thread->setStatus(READY);
-    listOfReadyThreads->Append((void *) thread, thread->GetPID());
+    /* ======================= CUSTOM ======================= */
+    switch (schedulerType) {
+        case SHORTEST_BURST:
+            listOfReadyThreads->SortedInsert((void *) thread, thread->GetEstimatedBurstTime());
+            break;
+        default:
+            listOfReadyThreads->Append((void *) thread);
+            break;
+    }
+    /* ======================= CUSTOM ======================= */
 }
 
 //----------------------------------------------------------------------

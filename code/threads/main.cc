@@ -66,11 +66,12 @@ extern void LaunchUserProcess(char *file), ConsoleTest(char *in, char *out);
 
 extern void MailTest(int networkID);
 
-/* ----------------------- CUSTOM ----------------------- */
+/* ======================= CUSTOM ======================= */
 extern void fork_init_func(int arg);
 
 
-int GetFileNameLength(char *c) {
+int
+GetFileNameLength(char *c) {
     int l = 0;
     while (c[l] != ' ' && c[l] != '\t' && c[l] != '\0') {
         l++;
@@ -79,7 +80,8 @@ int GetFileNameLength(char *c) {
 }
 
 
-int GetPriority(char *c) {
+int
+GetPriority(char *c) {
     int i = 0;
     while (c[i] == ' ' && c[i] != '\t') i++;
 
@@ -90,7 +92,7 @@ int GetPriority(char *c) {
 
     return priority;
 }
-/* ----------------------- CUSTOM ----------------------- */
+/* ======================= CUSTOM ======================= */
 
 
 //----------------------------------------------------------------------
@@ -142,6 +144,7 @@ main(int argc, char **argv) {
             // Nachos will loop forever waiting
             // for console input
         }
+        /* ======================= CUSTOM ======================= */
         else if (!strcmp(*argv, "-F")) {
             IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
@@ -184,6 +187,7 @@ main(int argc, char **argv) {
 
             (void) interrupt->SetLevel(oldLevel);
         }
+        /* ======================= CUSTOM ======================= */
 #endif // USER_PROGRAM
 #ifdef FILESYS
         if (!strcmp(*argv, "-cp")) {        // copy from UNIX to Nachos

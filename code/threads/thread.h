@@ -106,7 +106,7 @@ public:
 
     void CheckOverflow();            // Check if thread has
     // overflowed its stack
-    void setStatus(ThreadStatus st) { status = st; }
+    void setStatus(ThreadStatus st);
 
 
     char *getName() { return (name); }
@@ -143,9 +143,13 @@ public:
 #endif
 
     int numInstr;
-
-    void CreateThreadStack(VoidFunctionPtr func, int arg);
     /* ----------------------- CUSTOM ----------------------- */
+
+    /* ======================= CUSTOM ======================= */
+    void CreateThreadStack(VoidFunctionPtr func, int arg);
+
+    int GetEstimatedBurstTime() { return estimatedBurstTicks; }
+    /* ======================= CUSTOM ======================= */
 
 private:
     // some of the private data for this class is listed above
@@ -168,6 +172,16 @@ private:
 
     int waitingThreadPID;
     /* ----------------------- CUSTOM ----------------------- */
+
+    /* ======================= CUSTOM ======================= */
+    int lastBurstStartTicks;
+    int lastWaitStartTicks;
+
+    int totalBurstTicks;
+    int totalWaitTicks;
+
+    int estimatedBurstTicks;
+    /* ======================= CUSTOM ======================= */
 
 #ifdef USER_PROGRAM
     // A thread running a user program actually has *two* sets of CPU registers --

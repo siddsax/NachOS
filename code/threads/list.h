@@ -47,7 +47,9 @@ public:
 
     void Prepend(void *item);    // Put item at the beginning of the list
     void Append(void *item);    // Put item at the end of the list
-    void Append(void *item, int key);    // Put item at the end of the list
+    /* ======================= CUSTOM ======================= */
+    void Append(void *item, int key);    // Put item,key at the end of the list
+    /* ======================= CUSTOM ======================= */
     void *Remove();        // Take item off the front of the list
 
     void Mapcar(VoidFunctionPtr func);    // Apply "func" to every element

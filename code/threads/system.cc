@@ -28,6 +28,12 @@ int numTotalPages = 0;
 List *waitingQueue = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
+/* ======================= CUSTOM ======================= */
+SchedulerType schedulerType = SHORTEST_BURST;
+
+float ALPHA = 0.5;
+/* ======================= CUSTOM ======================= */
+
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
 #endif
@@ -90,17 +96,19 @@ wakeSleepingThreads() {
 
     (void) interrupt->SetLevel(oldLevel);
 }
-
-
 /* ----------------------- CUSTOM ----------------------- */
 
 
 static void
 TimerInterruptHandler(int dummy) {
+    /* ----------------------- CUSTOM ----------------------- */
     wakeSleepingThreads();
+    /* ----------------------- CUSTOM ----------------------- */
 
-//    if (interrupt->getStatus() != IdleMode)
-//        interrupt->YieldOnReturn();
+    /* ======================= CUSTOM ======================= */
+    if (schedulerType == P_DEFAULT && interrupt->getStatus() != IdleMode)
+        interrupt->YieldOnReturn();
+    /* ======================= CUSTOM ======================= */
 }
 
 

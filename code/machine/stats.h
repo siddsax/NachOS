@@ -36,6 +36,11 @@ public:
     int numPacketsSent;        // number of packets sent over the network
     int numPacketsRecvd;    // number of packets received over the network
 
+    /* ======================= CUSTOM ======================= */
+    int totalBurstTicks;
+    int totalWaitTicks;
+    /* ======================= CUSTOM ======================= */
+
     Statistics();        // initialize everything to zero
 
     void Print();        // print collected statistics

@@ -83,6 +83,7 @@ List::Append(void *item) {
     }
 }
 
+/* ======================= CUSTOM ======================= */
 void
 List::Append(void *item, int key) {
     ListElement *element = new ListElement(item, key);
@@ -96,6 +97,7 @@ List::Append(void *item, int key) {
         last = element;
     }
 }
+/* ======================= CUSTOM ======================= */
 
 //----------------------------------------------------------------------
 // List::Prepend

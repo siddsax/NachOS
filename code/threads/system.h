@@ -41,6 +41,20 @@ extern int numTotalPages;
 extern List *waitingQueue;
 /* ----------------------- CUSTOM ----------------------- */
 
+/* ======================= CUSTOM ======================= */
+enum SchedulerType {
+    NP_DEFAULT,
+    P_DEFAULT,
+    SHORTEST_BURST,
+    ROUND_ROBIN,
+    UNIX
+};
+
+extern SchedulerType schedulerType;
+
+extern float ALPHA;
+/* ======================= CUSTOM ======================= */
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 

@@ -57,6 +57,16 @@ NachOSThread::NachOSThread(char *threadName) {
     waitingThreadPID = -1;
     /* ----------------------- CUSTOM ----------------------- */
 
+    /* ======================= CUSTOM ======================= */
+    estimatedBurstTicks = 0;
+
+    totalBurstTicks = 0;
+    totalWaitTicks = 0;
+
+    lastBurstStartTicks = 0;
+    lastWaitStartTicks = 0;
+    /* ======================= CUSTOM ======================= */
+
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
@@ -168,6 +178,16 @@ NachOSThread::FinishThread() {
     DEBUG('t', "Finishing thread \"%s\"\n", getName());
 
     threadToBeDestroyed = currentThread;
+
+    /* ======================= CUSTOM ======================= */
+    int t = stats->totalTicks - lastBurstStartTicks;
+
+    totalBurstTicks += t;
+    stats->totalBurstTicks += t;
+
+//    printf("PID: %d; RUNNING TO STOP; Time %d", pid, t);
+    /* ======================= CUSTOM ======================= */
+
     /* ----------------------- CUSTOM ----------------------- */
     numThreadsCurrent--;
 
@@ -253,7 +273,7 @@ NachOSThread::PutThreadToSleep() {
 
     DEBUG('t', "Sleeping thread \"%s\"\n", getName());
 
-    status = BLOCKED;
+    setStatus(BLOCKED);
     while ((nextThread = scheduler->SelectNextReadyThread()) == NULL)
         interrupt->Idle();    // no one to run, wait for an interrupt
 
@@ -449,3 +469,58 @@ NachOSThread::GetChildExitCode(int cpid) {
     return exitCode;
 }
 /* ----------------------- CUSTOM ----------------------- */
+
+/* ======================= CUSTOM ======================= */
+void
+NachOSThread::setStatus(ThreadStatus st) {
+    if (status == JUST_CREATED) {
+        if (st == RUNNING) {
+            lastBurstStartTicks = stats->totalTicks;
+        }
+        else if (st == READY) {
+            lastWaitStartTicks = stats->totalTicks;
+        }
+
+//        printf("\nPID: %d; CREATED to %s\n", pid, (st == RUNNING) ? "RUNNING" : "READY");
+    }
+    else if (status == READY) {
+        int t = stats->totalTicks - lastWaitStartTicks;
+
+        stats->totalWaitTicks += t;
+        totalWaitTicks += t;
+
+        if (st == RUNNING) {
+            lastBurstStartTicks = stats->totalTicks;
+        }
+
+//        printf("\nPID: %d; READY to %s; Time: %d\n", pid, (st == RUNNING) ? "RUNNING" : "?", t);
+    }
+    else if (status == RUNNING) {
+        int t = stats->totalTicks - lastBurstStartTicks;
+
+        if (schedulerType == SHORTEST_BURST) {
+            estimatedBurstTicks = (int) ((1 - ALPHA) * estimatedBurstTicks + ALPHA * t);
+        }
+
+        totalBurstTicks += t;
+        stats->totalBurstTicks += t;
+
+        if (st == READY) {
+            lastWaitStartTicks = stats->totalTicks;
+        }
+
+//        printf("\nPID: %d; RUNNING to %s; Time: %d\n", pid, (st == READY) ? "READY" : "?", t);
+    }
+    else if (status == BLOCKED) {
+        if (st == RUNNING) {
+            lastBurstStartTicks = stats->totalTicks;
+        }
+        else if (st == READY) {
+            lastWaitStartTicks = stats->totalTicks;
+        }
+
+//        printf("\nPID: %d; BLOCKED to %s\n", pid, (st == RUNNING) ? "RUNNING" : "READY");
+    }
+    status = st;
+}
+/* ======================= CUSTOM ======================= */
