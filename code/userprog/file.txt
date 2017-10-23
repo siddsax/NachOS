@@ -1,2 +1,10 @@
-../test/longtest1
-../test/longtest2
+../test/testloop
+../test/testloop
+../test/testloop
+../test/testloop
+../test/testloop
+../test/testloop
+../test/testloop
+../test/testloop
+../test/testloop
+../test/testloop
