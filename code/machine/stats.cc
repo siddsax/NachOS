@@ -26,6 +26,10 @@ Statistics::Statistics() {
     numPageFaults = numPacketsSent = numPacketsRecvd = 0;
     /* ======================= CUSTOM ======================= */
     totalBurstTicks = totalWaitTicks = 0;
+
+    minBurstTicks = 1000000;
+    maxBurstTicks = 0;
+    numTotalBursts = 0;
     /* ======================= CUSTOM ======================= */
 }
 
@@ -45,5 +49,11 @@ Statistics::Print() {
     /* ======================= CUSTOM ======================= */
     printf("Ticks spent in CPU Burst: %d\n", totalBurstTicks);
     printf("Ticks spent waiting in Queue: %d\n", totalWaitTicks);
+    printf("\tCPU Utilization: %.2f\n", 100.0 * totalBurstTicks / totalTicks);
+    printf("Number of non-zero CPU Bursts: %d\n", numTotalBursts);
+    printf("Average Ticks in CPU Burst: %d\n",
+           (int) (((float) totalBurstTicks) / numTotalBursts + 0.5));
+    printf("Minimum CPU Burst Ticks: %d\n", minBurstTicks);
+    printf("Maximum CPU Burst Ticks: %d\n", maxBurstTicks);
     /* ======================= CUSTOM ======================= */
 }

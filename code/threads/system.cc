@@ -29,7 +29,7 @@ List *waitingQueue = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-SchedulerType schedulerType = UNIX_3;
+SchedulerType schedulerType = ROUND_ROBIN_3;
 
 int TimerTicks = 100;
 int averageTimerTicks = 132;
