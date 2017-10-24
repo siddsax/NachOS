@@ -22,6 +22,8 @@ Statistics::Statistics() {
     numConsoleCharsRead = numConsoleCharsWritten = 0;
     numPageFaults = numPacketsSent = numPacketsRecvd = 0;
     totalBurstTicks = totalWaitTicks = 0;
+    numCPUBursts=maxBurstTicks=0;
+    minBurstTicks=1000;
 }
 
 //----------------------------------------------------------------------
@@ -39,6 +41,13 @@ Statistics::Print() {
     printf("Network I/O: packets received %d, sent %d\n", numPacketsRecvd, numPacketsSent);
     /* ======================= CUSTOM ======================= */
     printf("Ticks spent in CPU Burst: %d\n", totalBurstTicks);
+    printf("Total number of CPU Bursts: %d\n", numCPUBursts);
+    printf("Average CPU Burst: %d\n", (totalBurstTicks/numCPUBursts+1*(totalBurstTicks%numCPUBursts==0)));
+    printf("Performance estimates(Not sure which one is correct\n");
+    printf("using totalBurstTicks: %d\n", (int)(100*((double)totalBurstTicks/totalTicks)));
+    printf("using idleTicks: %d\n", (int)(100-100*((double)idleTicks/totalTicks)));
+    printf("Minimum CPU Burst Ticks: %d\n", minBurstTicks);
+    printf("Maximum CPU Burst Ticks: %d\n", maxBurstTicks);
     printf("Ticks spent waiting in Queue: %d\n", totalWaitTicks);
     /* ======================= CUSTOM ======================= */
 }

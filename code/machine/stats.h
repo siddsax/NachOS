@@ -39,6 +39,9 @@ public:
     /* ======================= CUSTOM ======================= */
     int totalBurstTicks;
     int totalWaitTicks;
+    int numCPUBursts;
+    int minBurstTicks;
+    int maxBurstTicks;
     /* ======================= CUSTOM ======================= */
 
     Statistics();        // initialize everything to zero

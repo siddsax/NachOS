@@ -53,6 +53,7 @@ enum SchedulerType {
 extern SchedulerType schedulerType;
 
 extern float ALPHA;
+extern int quantum;
 /* ======================= CUSTOM ======================= */
 
 #ifdef USER_PROGRAM

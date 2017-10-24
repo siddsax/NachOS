@@ -236,12 +236,17 @@ NachOSThread::YieldCPU() {
 
     DEBUG('t', "Yielding thread \"%s\"\n", getName());
 
-    nextThread = scheduler->SelectNextReadyThread();
-    if (nextThread != NULL) {
-        scheduler->MoveThreadToReadyQueue(this);
-        scheduler->ScheduleThread(nextThread);
+    if(stats->totalTicks - lastBurstStartTicks < quantum){
+        (void) interrupt->SetLevel(oldLevel);    
     }
-    (void) interrupt->SetLevel(oldLevel);
+    else{
+        nextThread = scheduler->SelectNextReadyThread();
+        if (nextThread != NULL) {
+            scheduler->MoveThreadToReadyQueue(this);
+            scheduler->ScheduleThread(nextThread);
+        }
+        (void) interrupt->SetLevel(oldLevel);
+    }
 }
 
 
@@ -504,6 +509,12 @@ NachOSThread::setStatus(ThreadStatus st) {
 
         totalBurstTicks += t;
         stats->totalBurstTicks += t;
+        if(t>stats->maxBurstTicks)  stats->maxBurstTicks=t;
+
+        if(t>0){
+            if(t<stats->minBurstTicks)  stats->minBurstTicks=t;
+            stats->numCPUBursts++;
+        }
 
         if (st == READY) {
             lastWaitStartTicks = stats->totalTicks;

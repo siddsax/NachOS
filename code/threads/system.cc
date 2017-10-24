@@ -29,8 +29,9 @@ List *waitingQueue = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-SchedulerType schedulerType = SHORTEST_BURST;
+SchedulerType schedulerType = P_DEFAULT;
 
+int quantum = 99;
 float ALPHA = 0.5;
 /* ======================= CUSTOM ======================= */
 
@@ -106,7 +107,7 @@ TimerInterruptHandler(int dummy) {
     /* ----------------------- CUSTOM ----------------------- */
 
     /* ======================= CUSTOM ======================= */
-    if (schedulerType == P_DEFAULT && interrupt->getStatus() != IdleMode)
+    if (schedulerType == P_DEFAULT && interrupt->getStatus() != IdleMode )
         interrupt->YieldOnReturn();
     /* ======================= CUSTOM ======================= */
 }
