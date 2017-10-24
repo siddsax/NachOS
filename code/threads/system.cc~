@@ -29,7 +29,7 @@ List *waitingQueue = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-SchedulerType schedulerType = ROUND_ROBIN_1;
+SchedulerType schedulerType = ROUND_ROBIN_2;
 
 float ALPHA = 0.5;
 int average = 120;
@@ -162,7 +162,28 @@ Initialize(int argc, char **argv) {
             randomYield = TRUE;
             argCount = 2;
         }
-
+	switch(schedulerType){
+        	case UNIX_1 :
+        	case ROUND_ROBIN_1 :
+                	TimerTicks = average/4;
+                	break;
+        	case UNIX_2 :
+        	case ROUND_ROBIN_2 :
+                	TimerTicks = average/2;
+                	break;
+        	case UNIX_3 :
+        	case ROUND_ROBIN_3 :
+                	TimerTicks = 3*average/4;
+                	break;
+        	case UNIX_4 :
+        	case ROUND_ROBIN_4 :
+                	TimerTicks = (int)average*ideal;
+                	break;
+        	default :
+        	        TimerTicks = 100;
+	}
+	printf("--------------------------------------------------------");
+	printf("%d",TimerTicks);
 #ifdef USER_PROGRAM
         if (!strcmp(*argv, "-s"))
             debugUserProg = TRUE;

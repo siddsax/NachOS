@@ -39,6 +39,7 @@ public:
     /* ======================= CUSTOM ======================= */
     int totalBurstTicks;
     int totalWaitTicks;
+    //int TimerTicks;
     /* ======================= CUSTOM ======================= */
 
     Statistics();        // initialize everything to zero
@@ -60,6 +61,6 @@ public:
 #define SeekTime    500        // time disk takes to seek past one track
 #define ConsoleTime    100    // time to read or write one character
 #define NetworkTime    100    // time to send or receive one packet
-#define TimerTicks    100        // (average) time between timer interrupts
+//#define TimerTicks    100        // (average) time between timer interrupts
 
 #endif // STATS_H

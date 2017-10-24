@@ -22,7 +22,7 @@
 #include "copyright.h"
 #include "timer.h"
 #include "system.h"
-
+#include "stats.h"
 
 // dummy function because C++ does not allow pointers to member functions
 static void TimerHandler(int arg) {
