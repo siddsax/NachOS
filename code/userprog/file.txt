@@ -1,2 +1,4 @@
+../test/longtest2
+../test/longtest1
 ../test/longtest1
 ../test/longtest2

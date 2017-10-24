@@ -29,7 +29,12 @@ List *waitingQueue = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-SchedulerType schedulerType = SHORTEST_BURST;
+SchedulerType schedulerType = NP_DEFAULT;
+
+int TimerTicks = 100;
+
+int averageTimerTicks = 132;
+int idealTimerTicks = 100;
 
 float ALPHA = 0.5;
 /* ======================= CUSTOM ======================= */
@@ -106,7 +111,7 @@ TimerInterruptHandler(int dummy) {
     /* ----------------------- CUSTOM ----------------------- */
 
     /* ======================= CUSTOM ======================= */
-    if (schedulerType == P_DEFAULT && interrupt->getStatus() != IdleMode)
+    if (schedulerType != NP_DEFAULT && schedulerType != SHORTEST_BURST && interrupt->getStatus() != IdleMode)
         interrupt->YieldOnReturn();
     /* ======================= CUSTOM ======================= */
 }
@@ -180,12 +185,36 @@ Initialize(int argc, char **argv) {
 #endif
     }
 
+    switch(schedulerType) {
+        case UNIX_1:
+        case ROUND_ROBIN_1:
+            TimerTicks = averageTimerTicks / 4;
+            break;
+        case UNIX_2:
+        case ROUND_ROBIN_2:
+            TimerTicks = averageTimerTicks / 2;
+            break;
+        case UNIX_3:
+        case ROUND_ROBIN_3:
+            TimerTicks = 3 * averageTimerTicks / 4;
+            break;
+        case UNIX_4:
+        case ROUND_ROBIN_4:
+            TimerTicks = (int) averageTimerTicks * idealTimerTicks;
+            break;
+        default:
+            TimerTicks = 100;
+    }
+
     DebugInit(debugArgs);            // initialize DEBUG messages
     stats = new Statistics();            // collect statistics
     interrupt = new Interrupt;            // start up interrupt handling
     scheduler = new ProcessScheduler();        // initialize the ready queue
     //if (randomYield)				// start the timer (if needed)
-    timer = new Timer(TimerInterruptHandler, 0, randomYield);
+
+    /* ======================= CUSTOM ======================= */
+    timer = new Timer(TimerInterruptHandler, 0, schedulerType == P_DEFAULT);
+    /* ======================= CUSTOM ======================= */
 
     threadToBeDestroyed = NULL;
 

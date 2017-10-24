@@ -63,6 +63,7 @@ void
 Semaphore::P() {
     IntStatus oldLevel = interrupt->SetLevel(IntOff);    // disable interrupts
 
+//    printf("\nPID: %d %d\n", currentThread->GetPID(), value);
     while (value == 0) {            // semaphore not available
         queue->Append((void *) currentThread);    // so go to sleep
         currentThread->PutThreadToSleep();

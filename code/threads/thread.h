@@ -180,6 +180,8 @@ private:
     int totalBurstTicks;
     int totalWaitTicks;
 
+    int numberOfBursts;
+
     int estimatedBurstTicks;
     /* ======================= CUSTOM ======================= */
 

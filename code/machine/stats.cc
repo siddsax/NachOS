@@ -10,6 +10,9 @@
 #include "copyright.h"
 #include "utility.h"
 #include "stats.h"
+/* ======================= CUSTOM ======================= */
+#include "system.h"
+/* ======================= CUSTOM ======================= */
 
 //----------------------------------------------------------------------
 // Statistics::Statistics
@@ -21,7 +24,9 @@ Statistics::Statistics() {
     numDiskReads = numDiskWrites = 0;
     numConsoleCharsRead = numConsoleCharsWritten = 0;
     numPageFaults = numPacketsSent = numPacketsRecvd = 0;
+    /* ======================= CUSTOM ======================= */
     totalBurstTicks = totalWaitTicks = 0;
+    /* ======================= CUSTOM ======================= */
 }
 
 //----------------------------------------------------------------------

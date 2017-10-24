@@ -61,6 +61,17 @@ public:
     void SortedInsert(void *item, int sortKey);    // Put item into list
     void *SortedRemove(int *keyPtr);        // Remove first item from list
 
+    /* ======================= CUSTOM ======================= */
+    void
+    print() {
+        ListElement *curr = first;
+        while (curr) {
+            printf("\n>>\tLE: %d\n", curr->key);
+            curr = curr->next;
+        }
+    }
+    /* ======================= CUSTOM ======================= */
+
 
 private:
     ListElement *first;    // Head of the list, NULL if list is empty

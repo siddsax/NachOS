@@ -503,6 +503,7 @@ NachOSThread::setStatus(ThreadStatus st) {
         }
 
         totalBurstTicks += t;
+        printf("\n %d Burst: %d, %d\n", GetPID(), t, GetEstimatedBurstTime());
         stats->totalBurstTicks += t;
 
         if (st == READY) {

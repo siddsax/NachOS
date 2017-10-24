@@ -46,11 +46,21 @@ enum SchedulerType {
     NP_DEFAULT,
     P_DEFAULT,
     SHORTEST_BURST,
-    ROUND_ROBIN,
-    UNIX
+    ROUND_ROBIN_1,
+    ROUND_ROBIN_2,
+    ROUND_ROBIN_3,
+    ROUND_ROBIN_4,
+    UNIX_1,
+    UNIX_2,
+    UNIX_3,
+    UNIX_4
 };
 
 extern SchedulerType schedulerType;
+
+extern int TimerTicks;
+extern int averageTimerTicks;
+extern int idealTimerTicks;
 
 extern float ALPHA;
 /* ======================= CUSTOM ======================= */
