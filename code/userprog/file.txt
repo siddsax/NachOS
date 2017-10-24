@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-../test/longtest1
-../test/longtest2
-=======
 ../test/testloop
 ../test/testloop
 ../test/testloop
@@ -12,4 +8,3 @@
 ../test/testloop
 ../test/testloop
 ../test/testloop
->>>>>>> d4094d771a62defa4822fcafb459d21d74c7f2a3
