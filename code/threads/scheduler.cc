@@ -58,6 +58,12 @@ ProcessScheduler::MoveThreadToReadyQueue(NachOSThread *thread) {
         case SHORTEST_BURST:
             listOfReadyThreads->SortedInsert((void *) thread, thread->GetEstimatedBurstTime());
             break;
+        case UNIX_1:
+        case UNIX_2:
+        case UNIX_3:
+        case UNIX_4:
+            listOfReadyThreads->SortedInsert((void *) thread, thread->GetBasePriority() + thread->GetCpuCount() >> 1);
+            break;
         default:
             listOfReadyThreads->Append((void *) thread);
             break;
@@ -75,7 +81,30 @@ ProcessScheduler::MoveThreadToReadyQueue(NachOSThread *thread) {
 
 NachOSThread *
 ProcessScheduler::SelectNextReadyThread() {
-    return (NachOSThread *) listOfReadyThreads->Remove();
+    if (schedulerType == UNIX_1 || schedulerType == UNIX_2 || schedulerType == UNIX_3 || schedulerType == UNIX_4) {
+        List *tempQueue = new List;
+
+        NachOSThread *currThread;
+        int currPriority;
+
+        currPriority = currentThread->GetCpuCount();
+        currPriority += stats->totalTicks - currentThread->GetLastBurstStartTicks();
+        currentThread->SetCpuCount(currPriority >> 1);
+
+
+        while (!listOfReadyThreads->IsEmpty()) {
+            currThread = (NachOSThread *) listOfReadyThreads->SortedRemove(&currPriority);
+            currThread->SetCpuCount(currThread->GetCpuCount() >> 1);
+            tempQueue->SortedInsert((void *) currThread,
+                                    currThread->GetBasePriority() + (currThread->GetCpuCount() >> 1));
+        }
+
+        delete listOfReadyThreads;
+        listOfReadyThreads = tempQueue;
+    }
+
+    int dummy;
+    return (NachOSThread *) listOfReadyThreads->SortedRemove(&dummy);
 }
 
 //----------------------------------------------------------------------

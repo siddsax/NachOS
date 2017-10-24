@@ -156,6 +156,7 @@ main(int argc, char **argv) {
 
             while (fscanf(file, "%[^\n]\n", line) != EOF) {
                 len = GetFileNameLength(line);
+                priority = GetPriority(line + len);
 
                 char filename[len + 1];
                 strncpy(filename, line, len);
@@ -175,7 +176,13 @@ main(int argc, char **argv) {
                 space->InitUserModeCPURegisters();
                 space->RestoreContextOnSwitch();
 
-                NachOSThread *newThread = new NachOSThread(filename);
+                NachOSThread *newThread;
+                if (schedulerType == UNIX_1 || schedulerType == UNIX_2 || schedulerType == UNIX_3 || schedulerType == UNIX_4) {
+                    newThread = new NachOSThread(filename, minimumBasePriority + priority);
+                }
+                else {
+                    newThread = new NachOSThread(filename);
+                }
                 newThread->space = space;
                 newThread->SaveUserState();
                 newThread->CreateThreadStack(fork_init_func, 0);

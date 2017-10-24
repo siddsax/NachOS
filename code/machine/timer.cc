@@ -79,8 +79,9 @@ Timer::TimerExpired() {
 
 int
 Timer::TimeOfNextInterrupt() {
-    if (randomize)
+    if (randomize) {
         return 1 + (Random() % (TimerTicks * 2));
+    }
     else
         return TimerTicks;
 }

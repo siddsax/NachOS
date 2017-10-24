@@ -1,4 +1,10 @@
-../test/longtest2
-../test/longtest1
-../test/longtest1
-../test/longtest2
+../test/testloop 70
+../test/testloop 70
+../test/testloop 70
+../test/testloop 70
+../test/testloop 70
+../test/testloop 70
+../test/testloop 70
+../test/testloop 70
+../test/testloop 70
+../test/testloop 70

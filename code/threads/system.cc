@@ -29,12 +29,13 @@ List *waitingQueue = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-SchedulerType schedulerType = NP_DEFAULT;
+SchedulerType schedulerType = UNIX_3;
 
 int TimerTicks = 100;
-
 int averageTimerTicks = 132;
 int idealTimerTicks = 100;
+
+int minimumBasePriority = 50;
 
 float ALPHA = 0.5;
 /* ======================= CUSTOM ======================= */
@@ -106,14 +107,16 @@ wakeSleepingThreads() {
 
 static void
 TimerInterruptHandler(int dummy) {
-    /* ----------------------- CUSTOM ----------------------- */
-    wakeSleepingThreads();
-    /* ----------------------- CUSTOM ----------------------- */
+    if (interrupt->getStatus() != IdleMode) {
+        /* ----------------------- CUSTOM ----------------------- */
+        wakeSleepingThreads();
+        /* ----------------------- CUSTOM ----------------------- */
 
-    /* ======================= CUSTOM ======================= */
-    if (schedulerType != NP_DEFAULT && schedulerType != SHORTEST_BURST && interrupt->getStatus() != IdleMode)
-        interrupt->YieldOnReturn();
-    /* ======================= CUSTOM ======================= */
+        /* ======================= CUSTOM ======================= */
+        if (schedulerType != NP_DEFAULT && schedulerType != SHORTEST_BURST)
+            interrupt->YieldOnReturn();
+        /* ======================= CUSTOM ======================= */
+    }
 }
 
 
@@ -210,7 +213,6 @@ Initialize(int argc, char **argv) {
     stats = new Statistics();            // collect statistics
     interrupt = new Interrupt;            // start up interrupt handling
     scheduler = new ProcessScheduler();        // initialize the ready queue
-    //if (randomYield)				// start the timer (if needed)
 
     /* ======================= CUSTOM ======================= */
     timer = new Timer(TimerInterruptHandler, 0, schedulerType == P_DEFAULT);

@@ -62,6 +62,8 @@ extern int TimerTicks;
 extern int averageTimerTicks;
 extern int idealTimerTicks;
 
+extern int minimumBasePriority;
+
 extern float ALPHA;
 /* ======================= CUSTOM ======================= */
 

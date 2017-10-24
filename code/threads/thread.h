@@ -90,6 +90,8 @@ private:
 
 public:
     NachOSThread(char *debugName);        // initialize a Thread
+    NachOSThread(char *threadName, int baseSchedulingPriority);
+
     ~NachOSThread();                // deallocate a Thread
     // NOTE -- thread being deleted
     // must not be running when delete
@@ -149,6 +151,12 @@ public:
     void CreateThreadStack(VoidFunctionPtr func, int arg);
 
     int GetEstimatedBurstTime() { return estimatedBurstTicks; }
+    int GetLastBurstStartTicks() { return lastBurstStartTicks; }
+
+    int GetCpuCount() { return cpuCount; }
+    int GetBasePriority() { return basePriority; }
+
+    void SetCpuCount(int count) { cpuCount = count; }
     /* ======================= CUSTOM ======================= */
 
 private:
@@ -183,6 +191,9 @@ private:
     int numberOfBursts;
 
     int estimatedBurstTicks;
+
+    int cpuCount;
+    int basePriority;
     /* ======================= CUSTOM ======================= */
 
 #ifdef USER_PROGRAM

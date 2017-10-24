@@ -44,6 +44,63 @@ NachOSThread::NachOSThread(char *threadName) {
     if (parent != NULL) {
         ppid = parent->GetPID();
         parent->AddChild(this);
+        /* ======================= CUSTOM ======================= */
+        basePriority = parent->basePriority;
+        cpuCount = parent->cpuCount;
+        /* ======================= CUSTOM ======================= */
+    }
+    else {
+        /* ======================= CUSTOM ======================= */
+        basePriority = minimumBasePriority;
+        cpuCount = 0;
+        /* ======================= CUSTOM ======================= */
+        ppid = -1;
+    }
+
+    numInstr = 0;
+
+    childQueue = new List;
+    childExitCodeQueue = new List;
+
+    waitingThreadPID = -1;
+    /* ----------------------- CUSTOM ----------------------- */
+
+    /* ======================= CUSTOM ======================= */
+    estimatedBurstTicks = 0;
+
+    totalBurstTicks = 0;
+    totalWaitTicks = 0;
+
+    lastBurstStartTicks = 0;
+    lastWaitStartTicks = 0;
+    /* ======================= CUSTOM ======================= */
+
+    stackTop = NULL;
+    stack = NULL;
+    status = JUST_CREATED;
+#ifdef USER_PROGRAM
+    space = NULL;
+    stateRestored = true;
+#endif
+}
+
+
+NachOSThread::NachOSThread(char *threadName, int baseSchedulingPriority) {
+    name = threadName;
+
+    /* ----------------------- CUSTOM ----------------------- */
+    pid = ++numThreadsCreated;
+    numThreadsCurrent++;
+
+    /* ======================= CUSTOM ======================= */
+    basePriority = baseSchedulingPriority;
+    cpuCount = 0;
+    /* ======================= CUSTOM ======================= */
+
+    parent = currentThread;
+    if (parent != NULL) {
+        ppid = parent->GetPID();
+        parent->AddChild(this);
     }
     else {
         ppid = -1;
@@ -241,6 +298,12 @@ NachOSThread::YieldCPU() {
         scheduler->MoveThreadToReadyQueue(this);
         scheduler->ScheduleThread(nextThread);
     }
+    /* ======================= CUSTOM ======================= */
+    else {
+        setStatus(READY);
+        setStatus(RUNNING);
+    }
+    /* ======================= CUSTOM ======================= */
     (void) interrupt->SetLevel(oldLevel);
 }
 
@@ -367,7 +430,7 @@ NachOSThread::SaveUserState() {
 }
 
 //----------------------------------------------------------------------
-// NachOSThread::RestoreUserState
+// NachOSThread::RestoreUserSLtate
 //	Restore the CPU state of a user program on a context switch.
 //
 //	Note that a user program thread has *two* sets of CPU registers --
@@ -484,11 +547,6 @@ NachOSThread::setStatus(ThreadStatus st) {
 //        printf("\nPID: %d; CREATED to %s\n", pid, (st == RUNNING) ? "RUNNING" : "READY");
     }
     else if (status == READY) {
-        int t = stats->totalTicks - lastWaitStartTicks;
-
-        stats->totalWaitTicks += t;
-        totalWaitTicks += t;
-
         if (st == RUNNING) {
             lastBurstStartTicks = stats->totalTicks;
         }
@@ -503,7 +561,6 @@ NachOSThread::setStatus(ThreadStatus st) {
         }
 
         totalBurstTicks += t;
-        printf("\n %d Burst: %d, %d\n", GetPID(), t, GetEstimatedBurstTime());
         stats->totalBurstTicks += t;
 
         if (st == READY) {
