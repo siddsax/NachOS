@@ -530,6 +530,7 @@ NachOSThread::setStatus(ThreadStatus st) {
             lastWaitStartTicks = stats->totalTicks;
         }
 
+
 //        printf("\nPID: %d; BLOCKED to %s\n", pid, (st == RUNNING) ? "RUNNING" : "READY");
     }
     status = st;
