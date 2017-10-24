@@ -154,30 +154,6 @@ main(int argc, char **argv) {
             char line[1024];
             int priority, len;
 
-	    switch(schedulerType){
-                case UNIX_1 :
-                case ROUND_ROBIN_1 :
-                        TimerTicks = average/4;
-                        break;
-                case UNIX_2 :
-                case ROUND_ROBIN_2 :
-                        TimerTicks = average/2;
-                        break;
-                case UNIX_3 :
-                case ROUND_ROBIN_3 :
-                        TimerTicks = 3*average/4;
-                        break;
-                case UNIX_4 :
-                case ROUND_ROBIN_4 :
-                        TimerTicks = (int)average*ideal;
-                        break;
-                default :
-                        TimerTicks = 100;
-            }
-	    //printf("----------------------------");
-	    //printf("%d", TimerTicks);	
-	    
- 	    //TimerTicks = average/2;
             while (fscanf(file, "%[^\n]\n", line) != EOF) {
                 len = GetFileNameLength(line);
 
