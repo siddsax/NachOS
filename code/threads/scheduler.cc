@@ -1,4 +1,4 @@
-// scheduler.cc 
+// scheduler.cc
 //	Routines to choose the next thread to run, and to dispatch to
 //	that thread.
 //
@@ -7,15 +7,15 @@
 //	(since we are on a uniprocessor).
 //
 // 	NOTE: We can't use Locks to provide mutual exclusion here, since
-// 	if we needed to wait for a lock, and the lock was busy, we would 
-//	end up calling SelectNextReadyThread(), and that would put us in an 
+// 	if we needed to wait for a lock, and the lock was busy, we would
+//	end up calling SelectNextReadyThread(), and that would put us in an
 //	infinite loop.
 //
 // 	Very simple implementation -- no priorities, straight FIFO.
 //	Might need to be improved in later assignments.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -71,16 +71,9 @@ ProcessScheduler::MoveThreadToReadyQueue(NachOSThread *thread) {
     /* ======================= CUSTOM ======================= */
 }
 
-//----------------------------------------------------------------------
-// ProcessScheduler::SelectNextReadyThread
-// 	Return the next thread to be scheduled onto the CPU.
-//	If there are no ready threads, return NULL.
-// Side effect:
-//	Thread is removed from the ready list.
-//----------------------------------------------------------------------
-
-NachOSThread *
-ProcessScheduler::SelectNextReadyThread() {
+/* ======================= CUSTOM ======================= */
+void
+ProcessScheduler::UpdatePriorities() {
     if (schedulerType == UNIX_1 || schedulerType == UNIX_2 || schedulerType == UNIX_3 || schedulerType == UNIX_4) {
         List *tempQueue = new List;
 
@@ -90,7 +83,6 @@ ProcessScheduler::SelectNextReadyThread() {
         currPriority = currentThread->GetCpuCount();
         currPriority += stats->totalTicks - currentThread->GetLastBurstStartTicks();
         currentThread->SetCpuCount(currPriority >> 1);
-
 
         while (!listOfReadyThreads->IsEmpty()) {
             currThread = (NachOSThread *) listOfReadyThreads->SortedRemove(&currPriority);
@@ -102,9 +94,20 @@ ProcessScheduler::SelectNextReadyThread() {
         delete listOfReadyThreads;
         listOfReadyThreads = tempQueue;
     }
+}
+/* ======================= CUSTOM ======================= */
 
-    int dummy;
-    return (NachOSThread *) listOfReadyThreads->SortedRemove(&dummy);
+//----------------------------------------------------------------------
+// ProcessScheduler::SelectNextReadyThread
+// 	Return the next thread to be scheduled onto the CPU.
+//	If there are no ready threads, return NULL.
+// Side effect:
+//	Thread is removed from the ready list.
+//----------------------------------------------------------------------
+
+NachOSThread *
+ProcessScheduler::SelectNextReadyThread() {
+    return (NachOSThread *) listOfReadyThreads->Remove();
 }
 
 //----------------------------------------------------------------------
@@ -141,7 +144,7 @@ ProcessScheduler::ScheduleThread(NachOSThread *nextThread) {
     DEBUG('t', "Switching from thread \"%s\" to thread \"%s\"\n",
           oldThread->getName(), nextThread->getName());
 
-    // This is a machine-dependent assembly language routine defined 
+    // This is a machine-dependent assembly language routine defined
     // in switch.s.  You may have to think
     // a bit to figure out what happens after this, both from the point
     // of view of the thread and from the perspective of the "outside world".

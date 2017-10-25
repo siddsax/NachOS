@@ -23,6 +23,11 @@ public:
     ~ProcessScheduler();            // De-allocate ready list
 
     void MoveThreadToReadyQueue(NachOSThread *thread);    // Thread can be dispatched.
+
+    /* ======================= CUSTOM ======================= */
+    void UpdatePriorities();
+    /* ======================= CUSTOM ======================= */
+
     NachOSThread *SelectNextReadyThread();        // Dequeue first thread on the ready
     // list, if any, and return thread.
     void ScheduleThread(NachOSThread *nextThread);    // Cause nextThread to start running

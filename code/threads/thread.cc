@@ -557,36 +557,45 @@ NachOSThread::GetChildExitCode(int cpid) {
 void
 NachOSThread::setStatus(ThreadStatus st) {
     if (status == JUST_CREATED) {
+        printf("\nPID %d: CREATED to %s at Tick %d\n", pid, (st == RUNNING) ? "RUNNING" : "READY", stats->totalTicks);
+
         if (st == RUNNING) {
             lastBurstStartTicks = stats->totalTicks;
         }
         else if (st == READY) {
             lastWaitStartTicks = stats->totalTicks;
         }
-
-//        printf("\nPID: %d; CREATED to %s\n", pid, (st == RUNNING) ? "RUNNING" : "READY");
     }
     else if (status == READY) {
+        int t = stats->totalTicks - lastWaitStartTicks;
+
+        printf("\nPID %d: READY to %s at Tick %d\n", pid, (st == RUNNING) ? "RUNNING" : "UNKNOWN", stats->totalTicks);
+
         if (st == RUNNING) {
             lastBurstStartTicks = stats->totalTicks;
         }
 
-//        printf("\nPID: %d; READY to %s; Time: %d\n", pid, (st == RUNNING) ? "RUNNING" : "?", t);
+        totalWaitTicks += t;
+        stats->totalWaitTicks += t;
     }
     else if (status == RUNNING) {
         int t = stats->totalTicks - lastBurstStartTicks;
 
-        if (t == 0)
+        printf("\nPID %d: RUNNING to %s at Tick %d; Burst Length: %d\n", pid, (st == READY) ? "READY" : "BLOCKED", stats->totalTicks, t);
+
+        if (t == 0) {
+            status = st;
             return;
+        }
 
         if (schedulerType == SHORTEST_BURST) {
             estimatedBurstTicks = (int) ((1 - ALPHA) * estimatedBurstTicks + ALPHA * t);
         }
 
+        scheduler->UpdatePriorities();
+
         totalBurstTicks += t;
         stats->totalBurstTicks += t;
-
-        printf("\n>> Burst: %d\n", t);
 
         if (t > stats->maxBurstTicks)
             stats->maxBurstTicks = t;
@@ -599,18 +608,16 @@ NachOSThread::setStatus(ThreadStatus st) {
         if (st == READY) {
             lastWaitStartTicks = stats->totalTicks;
         }
-
-//        printf("\nPID: %d; RUNNING to %s; Time: %d\n", pid, (st == READY) ? "READY" : "?", t);
     }
     else if (status == BLOCKED) {
+        printf("\nPID %d: BLOCKED to %s at Tick %d\n", pid, (st == RUNNING) ? "RUNNING" : "READY", stats->totalTicks);
+
         if (st == RUNNING) {
             lastBurstStartTicks = stats->totalTicks;
         }
         else if (st == READY) {
             lastWaitStartTicks = stats->totalTicks;
         }
-
-//        printf("\nPID: %d; BLOCKED to %s\n", pid, (st == RUNNING) ? "RUNNING" : "READY");
     }
     status = st;
 }
