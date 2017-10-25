@@ -546,6 +546,11 @@ NachOSThread::GetChildExitCode(int cpid) {
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
+void UpdatePriority(int arg) {
+    NachOSThread *t = (NachOSThread *) arg;
+    t->SetCpuCount((t->GetCpuCount) >>1 );
+}
+
 void
 NachOSThread::setStatus(ThreadStatus st) {
     if (status == JUST_CREATED) {
