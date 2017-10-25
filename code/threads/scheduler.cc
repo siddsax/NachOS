@@ -80,10 +80,6 @@ ProcessScheduler::UpdatePriorities() {
         NachOSThread *currThread;
         int currPriority;
 
-        currPriority = currentThread->GetCpuCount();
-        currPriority += stats->totalTicks - currentThread->GetLastBurstStartTicks();
-        currentThread->SetCpuCount(currPriority >> 1);
-
         while (!listOfReadyThreads->IsEmpty()) {
             currThread = (NachOSThread *) listOfReadyThreads->SortedRemove(&currPriority);
             currThread->SetCpuCount(currThread->GetCpuCount() >> 1);

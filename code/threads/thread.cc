@@ -286,43 +286,49 @@ NachOSThread::FinishThread() {
 
 void
 NachOSThread::YieldCPU() {
-    NachOSThread *nextThread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
     ASSERT(this == currentThread);
 
     DEBUG('t', "Yielding thread \"%s\"\n", getName());
 
-    nextThread = scheduler->SelectNextReadyThread();
-    if (nextThread != NULL) {
-        scheduler->MoveThreadToReadyQueue(this);
-        scheduler->ScheduleThread(nextThread);
-    }
     /* ======================= CUSTOM ======================= */
-    else {
-        int t = stats->totalTicks - lastBurstStartTicks;
+    scheduler->MoveThreadToReadyQueue(this);
+    NachOSThread *nextThread = scheduler->SelectNextReadyThread();
+    scheduler->ScheduleThread(nextThread);
+    /* ======================= CUSTOM ======================= */
 
-        if (t != 0) {
-            if (schedulerType == SHORTEST_BURST) {
-                estimatedBurstTicks = (int) ((1 - ALPHA) * estimatedBurstTicks + ALPHA * t);
-            }
 
-            totalBurstTicks += t;
-            stats->totalBurstTicks += t;
-
-            printf("\n>> Burst: %d\n", t);
-
-            if (t > stats->maxBurstTicks)
-                stats->maxBurstTicks = t;
-
-            if (t < stats->minBurstTicks)
-                stats->minBurstTicks = t;
-
-            stats->numTotalBursts++;
-
-            lastBurstStartTicks = stats->totalTicks;
-        }
-    }
+//    nextThread = scheduler->SelectNextReadyThread();
+//    if (nextThread != NULL) {
+//        scheduler->MoveThreadToReadyQueue(this);
+//        scheduler->ScheduleThread(nextThread);
+//    }
+//    /* ======================= CUSTOM ======================= */
+//    else {
+//        int t = stats->totalTicks - lastBurstStartTicks;
+//
+//        if (t != 0) {
+//            if (schedulerType == SHORTEST_BURST) {
+//                estimatedBurstTicks = (int) ((1 - ALPHA) * estimatedBurstTicks + ALPHA * t);
+//            }
+//
+//            totalBurstTicks += t;
+//            stats->totalBurstTicks += t;
+//
+//            printf("\n>> Burst: %d\n", t);
+//
+//            if (t > stats->maxBurstTicks)
+//                stats->maxBurstTicks = t;
+//
+//            if (t < stats->minBurstTicks)
+//                stats->minBurstTicks = t;
+//
+//            stats->numTotalBursts++;
+//
+//            lastBurstStartTicks = stats->totalTicks;
+//        }
+//    }
     /* ======================= CUSTOM ======================= */
     (void) interrupt->SetLevel(oldLevel);
 }
@@ -496,7 +502,7 @@ NachOSThread::AddChildExitCode(int exCode, int cpid) {
 
 void
 NachOSThread::WakeUpThread(int childPID) {
-    if (this->waitingThreadPID == childPID) {
+    if (status == BLOCKED && this->waitingThreadPID == childPID) {
         waitingThreadPID = -1;
 
 #ifdef USER_PROGRAM
@@ -505,6 +511,7 @@ NachOSThread::WakeUpThread(int childPID) {
 
         scheduler->MoveThreadToReadyQueue(this);
     }
+
 }
 
 
@@ -611,6 +618,8 @@ NachOSThread::setStatus(ThreadStatus st) {
     }
     else if (status == BLOCKED) {
         printf("\nPID %d: BLOCKED to %s at Tick %d\n", pid, (st == RUNNING) ? "RUNNING" : "READY", stats->totalTicks);
+
+        SetCpuCount(0);
 
         if (st == RUNNING) {
             lastBurstStartTicks = stats->totalTicks;

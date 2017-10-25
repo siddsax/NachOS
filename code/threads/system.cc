@@ -29,7 +29,7 @@ List *waitingQueue = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-SchedulerType schedulerType = ROUND_ROBIN_1;
+SchedulerType schedulerType = UNIX_3;
 
 int TimerTicks = 100;
 int averageTimerTicks = 132;
@@ -112,15 +112,15 @@ TimerInterruptHandler(int dummy) {
         wakeSleepingThreads();
         /* ----------------------- CUSTOM ----------------------- */
 
+        /* ======================= CUSTOM ======================= */
+        printf("CURRENT RUNNING THREAD: ");
         if (currentThread != NULL) {
-            printf("CURRENT RUNNING THREAD: %d\n", currentThread->GetPID());
+            printf("%d\n", currentThread->GetPID());
         }
         else {
-            printf("CURRENT RUNNING THREAD: NULL\n");
+            printf("NULL\n");
         }
 
-
-        /* ======================= CUSTOM ======================= */
         printf("TOTAL TICKS: %d, LAST BURST: %d\n", stats->totalTicks, currentThread->GetLastBurstStartTicks());
         if (schedulerType != NP_DEFAULT && schedulerType != SHORTEST_BURST &&
             stats->totalTicks - currentThread->GetLastBurstStartTicks() >= timer->TimeOfNextInterrupt()) {
