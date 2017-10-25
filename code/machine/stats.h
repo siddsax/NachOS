@@ -44,6 +44,12 @@ public:
     int maxBurstTicks;
 
     int numTotalBursts;
+
+    int minCompletionTime;
+    int maxCompletionTime;
+
+    long long int sumCompletionTime;
+    long long int sumSquareCompletionTime;
     /* ======================= CUSTOM ======================= */
 
     Statistics();        // initialize everything to zero
