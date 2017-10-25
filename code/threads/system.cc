@@ -105,6 +105,14 @@ wakeSleepingThreads() {
 /* ----------------------- CUSTOM ----------------------- */
 
 
+/* ======================= CUSTOM ======================= */
+void UpdatePriority(int arg) {
+    NachOSThread *thread = (NachOSThread *) arg;
+    thread->SetCpuCount(thread->GetCpuCount() >> 1);
+}
+/* ======================= CUSTOM ======================= */
+
+
 static void
 TimerInterruptHandler(int dummy) {
     if (interrupt->getStatus() != IdleMode) {

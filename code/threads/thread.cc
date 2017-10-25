@@ -234,18 +234,30 @@ NachOSThread::FinishThread() {
 
     threadToBeDestroyed = currentThread;
 
-    /* ----------------------- CUSTOM ----------------------- */
-    numThreadsCurrent--;
-
     /* ======================= CUSTOM ======================= */
-    if(GetPID() > 0){
-        long long int temp = totalThreadTicks + stats->totalTicks - lastBurstStartTicks;
-        if(temp < stats->minCompletionTime) stats->minCompletionTime = temp;
-        if(temp > stats->maxCompletionTime) stats->maxCompletionTime = temp;
-        stats->sumCompletionTime += (temp);
-        stats->sumSquareCompletionTime += (temp)*(temp);
+    if (pid > 1) {
+        totalThreadTicks += stats->totalTicks - lastBurstStartTicks;
+
+        if (totalThreadTicks < stats->minCompletionTime)
+            stats->minCompletionTime = totalThreadTicks;
+
+        if (totalThreadTicks > stats->maxCompletionTime)
+            stats->maxCompletionTime = totalThreadTicks;
+
+        double tt = stats->numTotalThreads;
+        double ttr = totalThreadTicks / (tt + 1);
+
+
+        stats->averageCompletionTime = stats->averageCompletionTime * (tt / (tt + 1)) + ttr;
+        stats->averageSquareCompletionTime =
+                stats->averageSquareCompletionTime * (tt / (tt + 1)) + totalThreadTicks * ttr;
+
+        stats->numTotalThreads++;
     }
     /* ======================= CUSTOM ======================= */
+
+    /* ----------------------- CUSTOM ----------------------- */
+    numThreadsCurrent--;
 
     if (numThreadsCurrent == 0) {
         interrupt->Halt();
@@ -560,11 +572,6 @@ NachOSThread::GetChildExitCode(int cpid) {
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-void UpdatePriority(int arg) {
-    NachOSThread *t = (NachOSThread *) arg;
-    t->SetCpuCount((t->GetCpuCount()) >>1 );
-}
-
 void
 NachOSThread::setStatus(ThreadStatus st) {
     if (status == JUST_CREATED) {

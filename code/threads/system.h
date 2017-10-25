@@ -65,6 +65,8 @@ extern int idealTimerTicks;
 extern int minimumBasePriority;
 
 extern float ALPHA;
+
+extern void UpdatePriority(int arg);
 /* ======================= CUSTOM ======================= */
 
 #ifdef USER_PROGRAM

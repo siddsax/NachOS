@@ -93,16 +93,6 @@ ProcessScheduler::UpdatePriorities() {
         int wakeUpTicks;
 
         listOfBlockedThreads->Mapcar((VoidFunctionPtr) UpdatePriority);
-        // tempQueue = new List;
-
-        // while (!listOfBlockedThreads->IsEmpty()) {
-        //     currThread = (NachOSThread *) listOfBlockedThreads->SortedRemove(&wakeUpTicks);
-        //     currThread->SetCpuCount(currThread->GetCpuCount() >> 1);
-        //     tempQueue->SortedInsert((void *) currThread, wakeUpTicks);
-        // }
-
-        // delete listOfBlockedThreads;
-        // listOfBlockedThreads = tempQueue;
     }
 }
 /* ======================= CUSTOM ======================= */

@@ -48,8 +48,10 @@ public:
     int minCompletionTime;
     int maxCompletionTime;
 
-    long long int sumCompletionTime;
-    long long int sumSquareCompletionTime;
+    double averageCompletionTime;
+    double averageSquareCompletionTime;
+
+    int numTotalThreads;
     /* ======================= CUSTOM ======================= */
 
     Statistics();        // initialize everything to zero

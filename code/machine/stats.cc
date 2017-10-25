@@ -34,8 +34,8 @@ Statistics::Statistics() {
     minCompletionTime = 1000000;
     maxCompletionTime = 0;
 
-    sumCompletionTime=0;
-    sumSquareCompletionTime = 0;
+    averageCompletionTime = 0;
+    averageSquareCompletionTime = 0;
     /* ======================= CUSTOM ======================= */
 }
 
@@ -61,9 +61,10 @@ Statistics::Print() {
            (int) (((float) totalBurstTicks) / numTotalBursts + 0.5));
     printf("Minimum CPU Burst Ticks: %d\n", minBurstTicks);
     printf("Maximum CPU Burst Ticks: %d\n", maxBurstTicks);
-    printf("Minimum Completion Time: %d\n", minCompletionTime);
-    printf("Maximum Completion Time: %d\n", maxCompletionTime);
-    printf("Average Completion Time: %lf\n", ((double)sumCompletionTime/10.0));
-    printf("Variance of Completion Time: %lf\n", ((double)sumSquareCompletionTime/10.0) - ((double)sumCompletionTime/10.0)*((double)sumCompletionTime/10.0));
+    printf("Minimum Thread Completion Time: %d\n", minCompletionTime);
+    printf("Maximum Thread Completion Time: %d\n", maxCompletionTime);
+    printf("Average Thread Completion Time: %lf\n", averageCompletionTime);
+    printf("Variance of Thread Completion Times: %lf\n",
+           averageSquareCompletionTime - averageCompletionTime * averageCompletionTime);
     /* ======================= CUSTOM ======================= */
 }

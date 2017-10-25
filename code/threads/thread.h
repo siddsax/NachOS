@@ -70,10 +70,6 @@ enum ThreadStatus {
 // external function, dummy routine whose sole job is to call NachOSThread::Print
 extern void ThreadPrint(int arg);
 
-/* ======================= CUSTOM ======================= */
-extern void UpdatePriority(int arg);
-/* ======================= CUSTOM ======================= */
-
 // The following class defines a "thread control block" -- which
 // represents a single thread of execution.
 //
@@ -196,7 +192,7 @@ private:
     int cpuCount;
     int basePriority;
 
-    int totalThreadTicks;              //Added By Shobhit
+    int totalThreadTicks;
     /* ======================= CUSTOM ======================= */
 
 #ifdef USER_PROGRAM
