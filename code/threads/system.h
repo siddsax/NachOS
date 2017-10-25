@@ -38,7 +38,7 @@ extern int numThreadsCurrent;
 
 extern int numTotalPages;
 
-extern List *waitingQueue;
+extern List *listOfBlockedThreads;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */

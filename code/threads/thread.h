@@ -185,9 +185,6 @@ private:
     int lastBurstStartTicks;
     int lastWaitStartTicks;
 
-    int totalBurstTicks;
-    int totalWaitTicks;
-
     int numberOfBursts;
 
     int estimatedBurstTicks;

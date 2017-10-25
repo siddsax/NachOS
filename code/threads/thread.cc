@@ -68,9 +68,6 @@ NachOSThread::NachOSThread(char *threadName) {
     /* ======================= CUSTOM ======================= */
     estimatedBurstTicks = 0;
 
-    totalBurstTicks = 0;
-    totalWaitTicks = 0;
-
     lastBurstStartTicks = 0;
     lastWaitStartTicks = 0;
     /* ======================= CUSTOM ======================= */
@@ -116,9 +113,6 @@ NachOSThread::NachOSThread(char *threadName, int baseSchedulingPriority) {
 
     /* ======================= CUSTOM ======================= */
     estimatedBurstTicks = 0;
-
-    totalBurstTicks = 0;
-    totalWaitTicks = 0;
 
     lastBurstStartTicks = 0;
     lastWaitStartTicks = 0;
@@ -235,15 +229,6 @@ NachOSThread::FinishThread() {
     DEBUG('t', "Finishing thread \"%s\"\n", getName());
 
     threadToBeDestroyed = currentThread;
-
-    /* ======================= CUSTOM ======================= */
-    int t = stats->totalTicks - lastBurstStartTicks;
-
-    totalBurstTicks += t;
-    stats->totalBurstTicks += t;
-
-//    printf("PID: %d; RUNNING TO STOP; Time %d", pid, t);
-    /* ======================= CUSTOM ======================= */
 
     /* ----------------------- CUSTOM ----------------------- */
     numThreadsCurrent--;
@@ -565,24 +550,12 @@ void
 NachOSThread::setStatus(ThreadStatus st) {
     if (status == JUST_CREATED) {
         printf("\nPID %d: CREATED to %s at Tick %d\n", pid, (st == RUNNING) ? "RUNNING" : "READY", stats->totalTicks);
-
-        if (st == RUNNING) {
-            lastBurstStartTicks = stats->totalTicks;
-        }
-        else if (st == READY) {
-            lastWaitStartTicks = stats->totalTicks;
-        }
     }
     else if (status == READY) {
         int t = stats->totalTicks - lastWaitStartTicks;
 
         printf("\nPID %d: READY to %s at Tick %d\n", pid, (st == RUNNING) ? "RUNNING" : "UNKNOWN", stats->totalTicks);
 
-        if (st == RUNNING) {
-            lastBurstStartTicks = stats->totalTicks;
-        }
-
-        totalWaitTicks += t;
         stats->totalWaitTicks += t;
     }
     else if (status == RUNNING) {
@@ -590,44 +563,34 @@ NachOSThread::setStatus(ThreadStatus st) {
 
         printf("\nPID %d: RUNNING to %s at Tick %d; Burst Length: %d\n", pid, (st == READY) ? "READY" : "BLOCKED", stats->totalTicks, t);
 
-        if (t == 0) {
-            status = st;
-            return;
-        }
-
-        if (schedulerType == SHORTEST_BURST) {
-            estimatedBurstTicks = (int) ((1 - ALPHA) * estimatedBurstTicks + ALPHA * t);
-        }
-
+        SetCpuCount(t >> 1);
+        printf("\nPID %d: Base Priority is %d and CPU Count is %d\n", pid, basePriority, cpuCount);
         scheduler->UpdatePriorities();
 
-        totalBurstTicks += t;
-        stats->totalBurstTicks += t;
+        if (t != 0) {
+            if (schedulerType == SHORTEST_BURST) {
+                estimatedBurstTicks = (int) ((1 - ALPHA) * estimatedBurstTicks + ALPHA * t);
+            }
 
-        if (t > stats->maxBurstTicks)
-            stats->maxBurstTicks = t;
+            stats->totalBurstTicks += t;
 
-        if (t < stats->minBurstTicks)
-            stats->minBurstTicks = t;
+            if (t > stats->maxBurstTicks)
+                stats->maxBurstTicks = t;
 
-        stats->numTotalBursts++;
+            if (t < stats->minBurstTicks)
+                stats->minBurstTicks = t;
 
-        if (st == READY) {
-            lastWaitStartTicks = stats->totalTicks;
+            stats->numTotalBursts++;
         }
     }
     else if (status == BLOCKED) {
         printf("\nPID %d: BLOCKED to %s at Tick %d\n", pid, (st == RUNNING) ? "RUNNING" : "READY", stats->totalTicks);
 
         SetCpuCount(0);
-
-        if (st == RUNNING) {
-            lastBurstStartTicks = stats->totalTicks;
-        }
-        else if (st == READY) {
-            lastWaitStartTicks = stats->totalTicks;
-        }
     }
+    lastWaitStartTicks = stats->totalTicks;
+    lastBurstStartTicks = stats->totalTicks;
+
     status = st;
 }
 /* ======================= CUSTOM ======================= */

@@ -62,7 +62,7 @@ ProcessScheduler::MoveThreadToReadyQueue(NachOSThread *thread) {
         case UNIX_2:
         case UNIX_3:
         case UNIX_4:
-            listOfReadyThreads->SortedInsert((void *) thread, thread->GetBasePriority() + thread->GetCpuCount() >> 1);
+            listOfReadyThreads->SortedInsert((void *) thread, thread->GetBasePriority() + (thread->GetCpuCount() >> 1));
             break;
         default:
             listOfReadyThreads->Append((void *) thread);
@@ -89,6 +89,19 @@ ProcessScheduler::UpdatePriorities() {
 
         delete listOfReadyThreads;
         listOfReadyThreads = tempQueue;
+
+        int wakeUpTicks;
+
+        tempQueue = new List;
+
+        while (!listOfBlockedThreads->IsEmpty()) {
+            currThread = (NachOSThread *) listOfBlockedThreads->SortedRemove(&wakeUpTicks);
+            currThread->SetCpuCount(currThread->GetCpuCount() >> 1);
+            tempQueue->SortedInsert((void *) currThread, wakeUpTicks);
+        }
+
+        delete listOfBlockedThreads;
+        listOfBlockedThreads = tempQueue;
     }
 }
 /* ======================= CUSTOM ======================= */

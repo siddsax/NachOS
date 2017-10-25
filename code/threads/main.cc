@@ -83,7 +83,9 @@ GetFileNameLength(char *c) {
 int
 GetPriority(char *c) {
     int i = 0;
-    while (c[i] == ' ' && c[i] != '\t') i++;
+    while (c[i] == ' ' || c[i] == '\t') i++;
+
+    if (c[i] == '-') return 0;
 
     int priority = 0;
     while (c[i] != '\0') {

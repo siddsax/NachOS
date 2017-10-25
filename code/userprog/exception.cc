@@ -258,7 +258,7 @@ ExceptionHandler(ExceptionType which) {
         else {
             IntStatus oldLevel = interrupt->SetLevel(IntOff); //Disable Interrupts
 
-            waitingQueue->SortedInsert((void *) currentThread, stats->totalTicks +
+            listOfBlockedThreads->SortedInsert((void *) currentThread, stats->totalTicks +
                                                                sleepTime); //Add thread to waiting queue restored on every interrupt
 
             currentThread->PutThreadToSleep(); //Put the thread to sleep

@@ -25,7 +25,7 @@ int numThreadsCurrent = 0;
 
 int numTotalPages = 0;
 
-List *waitingQueue = new List;
+List *listOfBlockedThreads = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
@@ -89,10 +89,10 @@ wakeSleepingThreads() {
     NachOSThread *currentWaitingThread;
     int currentWaitingThreadWakeTime;
 
-    while (!waitingQueue->IsEmpty()) {
-        currentWaitingThread = (NachOSThread *) waitingQueue->SortedRemove(&currentWaitingThreadWakeTime);
+    while (!listOfBlockedThreads->IsEmpty()) {
+        currentWaitingThread = (NachOSThread *) listOfBlockedThreads->SortedRemove(&currentWaitingThreadWakeTime);
         if (currentWaitingThreadWakeTime > stats->totalTicks) {
-            waitingQueue->SortedInsert(currentWaitingThread, currentWaitingThreadWakeTime);
+            listOfBlockedThreads->SortedInsert(currentWaitingThread, currentWaitingThreadWakeTime);
             break;
         }
         else {
