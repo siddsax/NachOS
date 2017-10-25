@@ -65,6 +65,9 @@ NachOSThread::NachOSThread(char *threadName) {
 
     lastBurstStartTicks = 0;
     lastWaitStartTicks = 0;
+
+    basePriority = 0;
+    CPUUsage = 0;
     /* ======================= CUSTOM ======================= */
 
     stackTop = NULL;
@@ -236,17 +239,17 @@ NachOSThread::YieldCPU() {
 
     DEBUG('t', "Yielding thread \"%s\"\n", getName());
 
-    if(stats->totalTicks - lastBurstStartTicks < quantum){
+    if( (schedulerType == ROUND_ROBIN /*|| schedulerType == P_DEFAULT*/) && stats->totalTicks - lastBurstStartTicks < quantum){
         (void) interrupt->SetLevel(oldLevel);    
+        return;
     }
-    else{
-        nextThread = scheduler->SelectNextReadyThread();
-        if (nextThread != NULL) {
-            scheduler->MoveThreadToReadyQueue(this);
-            scheduler->ScheduleThread(nextThread);
-        }
-        (void) interrupt->SetLevel(oldLevel);
+
+    nextThread = scheduler->SelectNextReadyThread();
+    if (nextThread != NULL) {
+        scheduler->MoveThreadToReadyQueue(this);
+        scheduler->ScheduleThread(nextThread);
     }
+    (void) interrupt->SetLevel(oldLevel);
 }
 
 
@@ -476,6 +479,12 @@ NachOSThread::GetChildExitCode(int cpid) {
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
+
+void UpdateStats(int arg){
+    NachOSThread* t = (NachOSThread*)arg;
+    t->UpdateCPUUsage();
+}
+
 void
 NachOSThread::setStatus(ThreadStatus st) {
     if (status == JUST_CREATED) {

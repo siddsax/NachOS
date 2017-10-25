@@ -75,6 +75,11 @@ ProcessScheduler::MoveThreadToReadyQueue(NachOSThread *thread) {
 
 NachOSThread *
 ProcessScheduler::SelectNextReadyThread() {
+    /* --------------------CUSTOM------------------------ */
+    listOfReadyThreads->Mapcar((VoidFunctionPtr)UpdateStats);
+    waitingQueue->Mapcar((VoidFunctionPtr)UpdateStats);
+    currentThread->UpdateCPUUsage();
+    /* --------------------CUSTOM------------------------ */
     return (NachOSThread *) listOfReadyThreads->Remove();
 }
 

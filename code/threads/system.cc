@@ -25,13 +25,15 @@ int numThreadsCurrent = 0;
 
 int numTotalPages = 0;
 
+int basePriorityValue = 50;
+
 List *waitingQueue = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-SchedulerType schedulerType = P_DEFAULT;
+SchedulerType schedulerType = NP_DEFAULT;
 
-int quantum = 99;
+int quantum = 63;
 float ALPHA = 0.5;
 /* ======================= CUSTOM ======================= */
 
@@ -107,7 +109,7 @@ TimerInterruptHandler(int dummy) {
     /* ----------------------- CUSTOM ----------------------- */
 
     /* ======================= CUSTOM ======================= */
-    if (schedulerType == P_DEFAULT && interrupt->getStatus() != IdleMode )
+    if ( (schedulerType == P_DEFAULT || schedulerType == ROUND_ROBIN ) && interrupt->getStatus() != IdleMode )
         interrupt->YieldOnReturn();
     /* ======================= CUSTOM ======================= */
 }

@@ -42,7 +42,8 @@ Statistics::Print() {
     /* ======================= CUSTOM ======================= */
     printf("Ticks spent in CPU Burst: %d\n", totalBurstTicks);
     printf("Total number of CPU Bursts: %d\n", numCPUBursts);
-    printf("Average CPU Burst: %d\n", (totalBurstTicks/numCPUBursts+1*(totalBurstTicks%numCPUBursts==0)));
+    // printf("Average CPU Burst: %d\n", (totalBurstTicks/numCPUBursts+1*(totalBurstTicks%numCPUBursts==0)));
+    printf("Average CPU Burst: %lf\n", (double)totalBurstTicks/numCPUBursts);
     printf("Performance estimates(Not sure which one is correct\n");
     printf("using totalBurstTicks: %d\n", (int)(100*((double)totalBurstTicks/totalTicks)));
     printf("using idleTicks: %d\n", (int)(100-100*((double)idleTicks/totalTicks)));

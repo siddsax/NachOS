@@ -38,6 +38,8 @@ extern int numThreadsCurrent;
 
 extern int numTotalPages;
 
+extern int basePriorityValue;
+
 extern List *waitingQueue;
 /* ----------------------- CUSTOM ----------------------- */
 
