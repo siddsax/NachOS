@@ -180,6 +180,7 @@ main(int argc, char **argv) {
                     TimerTicks = 100;
             }
 
+
             while (fscanf(file, "%[^\n]\n", line) != EOF) {
                 len = GetFileNameLength(line);
                 priority = GetPriority(line + len);

@@ -36,6 +36,8 @@ Statistics::Statistics() {
 
     averageCompletionTime = 0;
     averageSquareCompletionTime = 0;
+
+    errorBurstEstimation = 0.0;
     /* ======================= CUSTOM ======================= */
 }
 
@@ -64,6 +66,7 @@ Statistics::Print() {
     printf("Minimum Thread Completion Time: %d\n", minCompletionTime);
     printf("Maximum Thread Completion Time: %d\n", maxCompletionTime);
     printf("Average Thread Completion Time: %lf\n", averageCompletionTime);
+    if(schedulerType == SHORTEST_BURST) printf("Error in CPU Burst Estimation: %lf\n", ((double)errorBurstEstimation/totalBurstTicks*100.0) );
     printf("Variance of Thread Completion Times: %lf\n",
            averageSquareCompletionTime - averageCompletionTime * averageCompletionTime);
     /* ======================= CUSTOM ======================= */

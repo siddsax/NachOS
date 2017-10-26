@@ -591,6 +591,8 @@ NachOSThread::setStatus(ThreadStatus st) {
 
         if (t != 0) {
             if (schedulerType == SHORTEST_BURST) {
+                if(t < estimatedBurstTicks) stats->errorBurstEstimation += (estimatedBurstTicks - t);
+                else { stats->errorBurstEstimation += (t - estimatedBurstTicks); }
                 estimatedBurstTicks = (int) ((1 - ALPHA) * estimatedBurstTicks + ALPHA * t);
             }
 

@@ -52,6 +52,7 @@ public:
     double averageSquareCompletionTime;
 
     int numTotalThreads;
+    double errorBurstEstimation;
     /* ======================= CUSTOM ======================= */
 
     Statistics();        // initialize everything to zero
