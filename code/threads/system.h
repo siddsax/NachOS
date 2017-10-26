@@ -43,8 +43,8 @@ extern List *listOfBlockedThreads;
 
 /* ======================= CUSTOM ======================= */
 enum SchedulerType {
-    NP_DEFAULT,
     P_DEFAULT,
+    NP_DEFAULT,
     SHORTEST_BURST,
     ROUND_ROBIN_1,
     ROUND_ROBIN_2,

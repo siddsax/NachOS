@@ -1,4 +1,3 @@
-1
 ../test/testloop3 30
 ../test/testloop3 10
 ../test/testloop3 48

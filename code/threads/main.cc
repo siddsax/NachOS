@@ -157,18 +157,27 @@ main(int argc, char **argv) {
             int priority, len, option;
 
             fscanf(file, "%d\n", &option);
+            schedulerType = (SchedulerType) option;
 
-            switch(option){
-                case 1:  schedulerType = NP_DEFAULT;   break;
-                case 2:  schedulerType = SHORTEST_BURST;   break;
-                case 3:  schedulerType = ROUND_ROBIN_1;   break;
-                case 4:  schedulerType = ROUND_ROBIN_2;   break;
-                case 5:  schedulerType = ROUND_ROBIN_3;   break;
-                case 6:  schedulerType = ROUND_ROBIN_4;   break;
-                case 7:  schedulerType = UNIX_1;   break;
-                case 8:  schedulerType = UNIX_2;   break;
-                case 9:  schedulerType = UNIX_3;   break;
-                case 10:  schedulerType = UNIX_4;   break;
+            switch(schedulerType) {
+                case UNIX_1:
+                case ROUND_ROBIN_1:
+                    TimerTicks = averageTimerTicks / 4;
+                    break;
+                case UNIX_2:
+                case ROUND_ROBIN_2:
+                    TimerTicks = averageTimerTicks / 2;
+                    break;
+                case UNIX_3:
+                case ROUND_ROBIN_3:
+                    TimerTicks = 3 * averageTimerTicks / 4;
+                    break;
+                case UNIX_4:
+                case ROUND_ROBIN_4:
+                    TimerTicks = (int) averageTimerTicks * idealTimerTicks;
+                    break;
+                default:
+                    TimerTicks = 100;
             }
 
             while (fscanf(file, "%[^\n]\n", line) != EOF) {
