@@ -29,11 +29,11 @@ List *listOfBlockedThreads = new List;
 /* ----------------------- CUSTOM ----------------------- */
 
 /* ======================= CUSTOM ======================= */
-SchedulerType schedulerType = UNIX_3;
+SchedulerType schedulerType = UNIX_4;
 
 int TimerTicks = 100;
 int averageTimerTicks = 132;
-int idealTimerTicks = 100;
+int idealTimerTicks = 20;
 
 int minimumBasePriority = 50;
 

@@ -191,8 +191,6 @@ private:
 
     int cpuCount;
     int basePriority;
-
-    int totalThreadTicks;
     /* ======================= CUSTOM ======================= */
 
 #ifdef USER_PROGRAM

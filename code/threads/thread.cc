@@ -70,8 +70,6 @@ NachOSThread::NachOSThread(char *threadName) {
 
     lastBurstStartTicks = 0;
     lastWaitStartTicks = 0;
-
-    totalThreadTicks = 0;
     /* ======================= CUSTOM ======================= */
 
     stackTop = NULL;
@@ -118,8 +116,6 @@ NachOSThread::NachOSThread(char *threadName, int baseSchedulingPriority) {
 
     lastBurstStartTicks = 0;
     lastWaitStartTicks = 0;
-
-    totalThreadTicks = 0;
     /* ======================= CUSTOM ======================= */
 
     stackTop = NULL;
@@ -236,7 +232,7 @@ NachOSThread::FinishThread() {
 
     /* ======================= CUSTOM ======================= */
     if (pid > 1) {
-        totalThreadTicks += stats->totalTicks - lastBurstStartTicks;
+        int totalThreadTicks = stats->totalTicks;
 
         if (totalThreadTicks < stats->minCompletionTime)
             stats->minCompletionTime = totalThreadTicks;
@@ -583,8 +579,6 @@ NachOSThread::setStatus(ThreadStatus st) {
         printf("\nPID %d: READY to %s at Tick %d\n", pid, (st == RUNNING) ? "RUNNING" : "UNKNOWN", stats->totalTicks);
 
         stats->totalWaitTicks += t;
-
-        totalThreadTicks += t;
     }
     else if (status == RUNNING) {
         int t = stats->totalTicks - lastBurstStartTicks;
@@ -609,8 +603,6 @@ NachOSThread::setStatus(ThreadStatus st) {
                 stats->minBurstTicks = t;
 
             stats->numTotalBursts++;
-
-            totalThreadTicks += t;
         }
     }
     else if (status == BLOCKED) {
