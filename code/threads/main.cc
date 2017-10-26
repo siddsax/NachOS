@@ -154,7 +154,22 @@ main(int argc, char **argv) {
             file = fopen(argv[1], "r");
 
             char line[1024];
-            int priority, len;
+            int priority, len, option;
+
+            fscanf(file, "%d\n", &option);
+
+            switch(option){
+                case 1:  schedulerType = NP_DEFAULT;   break;
+                case 2:  schedulerType = SHORTEST_BURST;   break;
+                case 3:  schedulerType = ROUND_ROBIN_1;   break;
+                case 4:  schedulerType = ROUND_ROBIN_2;   break;
+                case 5:  schedulerType = ROUND_ROBIN_3;   break;
+                case 6:  schedulerType = ROUND_ROBIN_4;   break;
+                case 7:  schedulerType = UNIX_1;   break;
+                case 8:  schedulerType = UNIX_2;   break;
+                case 9:  schedulerType = UNIX_3;   break;
+                case 10:  schedulerType = UNIX_4;   break;
+            }
 
             while (fscanf(file, "%[^\n]\n", line) != EOF) {
                 len = GetFileNameLength(line);
