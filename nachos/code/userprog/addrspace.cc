@@ -224,8 +224,6 @@ unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
 
     numPagesAllocated += numVirtualPages - returnValue;
 
-    printf("THIS IS SPARTA of size: %d", size);
-
     return returnValue * PageSize;
 }
 /* ------------------------- CUSTOM ------------------------- */

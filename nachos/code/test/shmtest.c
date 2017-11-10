@@ -14,9 +14,21 @@ int main()
     if (x == 0)
     {
         array[0] = 20;
-        for (i = 0; i < NUM_ITER; i++)
+        int y = syscall_wrapper_Fork();
+        if (y == 0)
         {
-            array[0]++;
+            for (i = 0; i < NUM_ITER; i++)
+            {
+                array[0]++;
+            }
+        }
+        else
+        {
+            for (i = 0; i < NUM_ITER; i++)
+            {
+                array[0]++;
+            }
+            syscall_wrapper_Join(y);
         }
     }
     else

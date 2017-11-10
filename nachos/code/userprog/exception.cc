@@ -164,7 +164,6 @@ void ExceptionHandler(ExceptionType which)
         }
     }
     /* ------------------------- CUSTOM ------------------------- */
-
     else if ((which == SyscallException) && (type == SysCall_ShmAllocate))
     {
         unsigned int size = machine->ReadRegister(4);
@@ -177,7 +176,6 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
-
     /* ------------------------- CUSTOM ------------------------- */
     else if ((which == SyscallException) && (type == SysCall_Fork))
     {
