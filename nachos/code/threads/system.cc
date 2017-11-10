@@ -117,7 +117,10 @@ Initialize(int argc, char **argv)
     numPagesAllocated = 0;
 
     schedulingAlgo = NON_PREEMPTIVE_BASE;	// Default
-
+    //-------------------------CUSTOM------------------------
+    pageReplaceAlgo = 1;
+    //pageFaultCount = 0;
+    //-------------------------------------------------------
     batchProcesses = new char*[MAX_BATCH_SIZE];
     ASSERT(batchProcesses != NULL);
     for (i=0; i<MAX_BATCH_SIZE; i++) {

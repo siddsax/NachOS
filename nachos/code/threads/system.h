@@ -54,14 +54,17 @@ extern unsigned thread_index;                  // Index into this array (also us
 extern bool initializedConsoleSemaphores;	// Used to initialize the semaphores for console I/O exactly once
 extern bool exitThreadArray[];		// Marks exited threads
 
+//-----------------------------------------CUSTOM----------------------------------
+extern int pageReplaceAlgo;
 extern int schedulingAlgo;		// Scheduling algorithm to simulate
+//extern int pageFaultCount;
+//---------------------------------------------------------------------------------
 extern char **batchProcesses;		// Names of batch executables
 extern int *priority;			// Process priority
 
 extern int cpu_burst_start_time;	// Records the start of current CPU burst
 extern int completionTimeArray[];	// Records the completion time of all simulated threads
 extern bool excludeMainThread;		// Used by completion time statistics calculation
-
 class TimeSortedWaitQueue {		// Needed to implement syscall_wrapper_Sleep
 private:
    NachOSThread *t;				// NachOSThread pointer of the sleeping thread
