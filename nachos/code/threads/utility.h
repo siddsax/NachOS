@@ -36,16 +36,16 @@
 #ifndef FALSE
 #define FALSE 0
 #endif
-					 	// Boolean values.  
-						// This is the same definition 
-						// as in the g++ library.
+// Boolean values.
+// This is the same definition
+// as in the g++ library.
 
-#define min(a,b)  (((a) < (b)) ? (a) : (b))
-#define max(a,b)  (((a) > (b)) ? (a) : (b))
+#define min(a, b)  (((a) < (b)) ? (a) : (b))
+#define max(a, b)  (((a) > (b)) ? (a) : (b))
 
 // Divide and either round up or down 
-#define divRoundDown(n,s)  ((n) / (s))
-#define divRoundUp(n,s)    (((n) / (s)) + ((((n) % (s)) > 0) ? 1 : 0))
+#define divRoundDown(n, s)  ((n) / (s))
+#define divRoundUp(n, s)    (((n) / (s)) + ((((n) % (s)) > 0) ? 1 : 0))
 
 // This declares the type "VoidFunctionPtr" to be a "pointer to a
 // function taking an integer argument and returning nothing".  With
@@ -56,22 +56,23 @@
 // This is used by NachOSThread::ThreadFork and for interrupt handlers, as well
 // as a couple of other places.
 
-typedef void (*VoidFunctionPtr)(int arg); 
-typedef void (*VoidNoArgFunctionPtr)(); 
+typedef void (*VoidFunctionPtr)(int arg);
+
+typedef void (*VoidNoArgFunctionPtr)();
 
 
 // Include interface that isolates us from the host machine system library.
 // Requires definition of bool, and VoidFunctionPtr
-#include "sysdep.h"				
+#include "sysdep.h"
 
 // Interface to debugging routines.
 
-extern void DebugInit(char* flags);	// enable printing debug messages
+extern void DebugInit(char *flags);    // enable printing debug messages
 
-extern bool DebugIsEnabled(char flag); 	// Is this debug flag enabled?
+extern bool DebugIsEnabled(char flag);    // Is this debug flag enabled?
 
-extern void DEBUG (char flag, char* format, ...);  	// Print debug message 
-							// if flag is enabled
+extern void DEBUG(char flag, char *format, ...);    // Print debug message
+// if flag is enabled
 
 //----------------------------------------------------------------------
 // ASSERT
@@ -85,7 +86,7 @@ extern void DEBUG (char flag, char* format, ...);  	// Print debug message
     if (!(condition)) {                                                       \
         fprintf(stderr, "Assertion failed: line %d, file \"%s\"\n",           \
                 __LINE__, __FILE__);                                          \
-	fflush(stderr);							      \
+    fflush(stderr);                                  \
         Abort();                                                              \
     }
 

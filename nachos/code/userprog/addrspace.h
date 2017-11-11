@@ -18,38 +18,40 @@
 
 #define UserStackSize 1024 // increase this as necessary!
 
-class ProcessAddressSpace
-{
+class ProcessAddressSpace {
 public:
-  ProcessAddressSpace(OpenFile *executable); // Create an address space,
-                                             // initializing it with the program
-                                             // stored in the file "executable"
+    ProcessAddressSpace(OpenFile *executable); // Create an address space,
+    // initializing it with the program
+    // stored in the file "executable"
 
-  ProcessAddressSpace(ProcessAddressSpace *parentSpace); // Used by fork
+    ProcessAddressSpace(ProcessAddressSpace *parentSpace); // Used by fork
 
-  unsigned int AllocateSharedMemory(int size);
+    unsigned int AllocateSharedMemory(int size);
 
-  ~ProcessAddressSpace(); // De-allocate an address space
+    ~ProcessAddressSpace(); // De-allocate an address space
 
-  void InitUserModeCPURegisters(); // Initialize user-level CPU registers,
-                                   // before jumping to user code
+    void InitUserModeCPURegisters(); // Initialize user-level CPU registers,
+    // before jumping to user code
 
-  void SaveContextOnSwitch();    // Save/restore address space-specific
-  void RestoreContextOnSwitch(); // info on a context switch
+    void SaveContextOnSwitch();    // Save/restore address space-specific
+    void RestoreContextOnSwitch(); // info on a context switch
 
-  unsigned GetNumPages();
+    unsigned GetNumPages();
 
-  TranslationEntry *GetPageTable();
-  int getPhyPageNum(int parentPage);
-  bool DemandAllocation(int vpaddress);
-  char *fileName;
+    TranslationEntry *GetPageTable();
+
+    int getPhyPageNum(int parentPage);
+
+    bool DemandAllocation(int vpaddress);
+
+    char *fileName;
 
 private:
-  TranslationEntry *KernelPageTable; // Assume linear page table translation
-                                     // for now!
-  unsigned int numVirtualPages;      // Number of pages in the virtual
-                                     // address space
-  OpenFile *progExecutable;
+    TranslationEntry *KernelPageTable; // Assume linear page table translation
+    // for now!
+    unsigned int numVirtualPages;      // Number of pages in the virtual
+    // address space
+    OpenFile *progExecutable;
 };
 
 #endif // ADDRSPACE_H

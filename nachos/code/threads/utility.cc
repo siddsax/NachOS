@@ -17,7 +17,9 @@
 #ifdef HOST_SPARC
 #include <stdarg.h>
 #else
+
 #include <stdarg.h>
+
 #endif
 #endif
 
@@ -35,8 +37,7 @@ static char *enableFlags = NULL; // controls which DEBUG messages are printed
 //----------------------------------------------------------------------
 
 void
-DebugInit(char *flagList)
-{
+DebugInit(char *flagList) {
     enableFlags = flagList;
 }
 
@@ -46,13 +47,12 @@ DebugInit(char *flagList)
 //----------------------------------------------------------------------
 
 bool
-DebugIsEnabled(char flag)
-{
+DebugIsEnabled(char flag) {
     if (enableFlags != NULL)
-       return (strchr(enableFlags, flag) != 0) 
-		|| (strchr(enableFlags, '+') != 0);
+        return (strchr(enableFlags, flag) != 0)
+               || (strchr(enableFlags, '+') != 0);
     else
-      return FALSE;
+        return FALSE;
 }
 
 //----------------------------------------------------------------------
@@ -61,15 +61,14 @@ DebugIsEnabled(char flag)
 //	only with an extra argument on the front.
 //----------------------------------------------------------------------
 
-void 
-DEBUG(char flag, char *format, ...)
-{
+void
+DEBUG(char flag, char *format, ...) {
     if (DebugIsEnabled(flag)) {
-	va_list ap;
-	// You will get an unused variable message here -- ignore it.
-	va_start(ap, format);
-	vfprintf(stdout, format, ap);
-	va_end(ap);
-	fflush(stdout);
+        va_list ap;
+        // You will get an unused variable message here -- ignore it.
+        va_start(ap, format);
+        vfprintf(stdout, format, ap);
+        va_end(ap);
+        fflush(stdout);
     }
 }
