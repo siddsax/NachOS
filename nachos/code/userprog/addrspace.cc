@@ -206,34 +206,35 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
     //-----------------------CUSTOM-------------------------------------------------------
     
 	    unsigned startAddrParent = parentPageTable[0].physicalPage*PageSize;
-	    for (i = 0; i < numVirtualPages; i++) {
+	    for (int i = 0; i < numVirtualPages; i++) {
 		KernelPageTable[i].virtualPage = i;
 		if(parentPageTable[i].valid == TRUE)
 		{
-			printf("ALLOTED %dth Entry to %d whose parent is %d",i,currentThread->GetPID(),currentThread->GetPPID());
+			printf("\nALLOTED %dth Entry to son of %d\n",i,currentThread->GetPID());
 			//IntStatus oldLevel = interrupt->SetLevel(IntOff);  // disable interrupts
 			KernelPageTable[i].physicalPage = getPhyPageNum(parentPageTable[i].physicalPage); //DONT Replace the parent's page itself 
 			KernelPageTable[i].use = parentPageTable[i].use;
 			KernelPageTable[i].readOnly = parentPageTable[i].readOnly;  	// if the code segment was entirely on
 									// a separate page, we could set its
 									// pages to be read-only
-			for (int k=0; i<PageSize; k++) {
+			for (int k=0; k<PageSize; k++) {
+				//int a = KernelPageTable[i].physicalPage*PageSize + k;
+				//int b = parentPageTable[i].physicalPage*PageSize + k;
+				//printf("#######\n%d,%d\n#########",a,b);
 				machine->mainMemory[KernelPageTable[i].physicalPage*PageSize+k] = machine->mainMemory[parentPageTable[i].physicalPage*PageSize + k];
 			}
+			//printf("\n##########%d#####\n",i);
 			KernelPageTable[i].dirty = parentPageTable[i].dirty;
 			stats->pageFaultCount++;
-
+			currentThread->SortedInsertInWaitQueue(1000+stats->totalTicks);
 		}
 		else
 		{
-			for (i = 0; i < numVirtualPages; i++) 
-			{
-				KernelPageTable[i].physicalPage = -1;
-				KernelPageTable[i].valid = parentPageTable[i].valid;
-				KernelPageTable[i].use = parentPageTable[i].use;
-				KernelPageTable[i].dirty = parentPageTable[i].dirty;
-				KernelPageTable[i].readOnly = parentPageTable[i].readOnly;
-              		}
+	                KernelPageTable[i].physicalPage = -1;
+			KernelPageTable[i].valid = parentPageTable[i].valid;
+			KernelPageTable[i].use = parentPageTable[i].use;
+			KernelPageTable[i].dirty = parentPageTable[i].dirty;
+			KernelPageTable[i].readOnly = parentPageTable[i].readOnly;
 		}
 	    }
      }

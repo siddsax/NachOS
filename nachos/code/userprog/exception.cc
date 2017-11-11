@@ -182,14 +182,16 @@ ExceptionHandler(ExceptionType which)
        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg)+4);
        
        child = new NachOSThread("Forked thread", GET_NICE_FROM_PARENT);
+      
        child->space = new ProcessAddressSpace (currentThread->space);  // Duplicates the address space
        child->SaveUserState ();		     		      // Duplicate the register set
        child->ResetReturnValue ();			     // Sets the return register to zero
        child->CreateThreadStack (ForkStartFunction, 0);	// Make it ready for a later context switch
-       //child->Schedule ();
-       if(pageReplaceAlgo==0) child->Schedule();
-       else child->SortedInsertInWaitQueue(1000+stats->totalTicks);
-       
+	printf("########################");       
+	child->Schedule ();
+       //if(pageReplaceAlgo==0) child->Schedule();
+       //else child->SortedInsertInWaitQueue(1000+stats->totalTicks);
+       //machine->WriteRegister(2, 2); 
        machine->WriteRegister(2, child->GetPID());		// Return value for parent
     }
     else if ((which == SyscallException) && (type == SysCall_Yield)) {
