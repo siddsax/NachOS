@@ -65,4 +65,5 @@ Statistics::Print()
     printf("Number of context switches through yield or preemption: %d, Number of non-preemptive context switches: %d\n", preemptive_switch, nonpreemptive_switch);
     printf("Total time for which the ready queue is empty: %d\n", empty_ready_queue_time);
     printf("Wait time in ready queue: Total: %d, Average: %.2f\n\n", total_wait_time, (float)total_wait_time/numTotalThreads);
+    printf("Number of Page Faults is: %d\n",pageFaultCount);
 }

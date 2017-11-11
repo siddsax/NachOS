@@ -48,17 +48,17 @@ extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 extern unsigned numPagesAllocated;		// number of physical frames allocated
+//-----------------------------------------CUSTOM----------------------------------
+extern int schedulingAlgo;		// Scheduling algorithm to simulate
+extern int pageReplaceAlgo;
+//---------------------------------------------------------------------------------
 
 extern NachOSThread *threadArray[];  // Array of thread pointers
 extern unsigned thread_index;                  // Index into this array (also used to assign unique pid)
 extern bool initializedConsoleSemaphores;	// Used to initialize the semaphores for console I/O exactly once
 extern bool exitThreadArray[];		// Marks exited threads
 
-//-----------------------------------------CUSTOM----------------------------------
-extern int pageReplaceAlgo;
-extern int schedulingAlgo;		// Scheduling algorithm to simulate
-//extern int pageFaultCount;
-//---------------------------------------------------------------------------------
+
 extern char **batchProcesses;		// Names of batch executables
 extern int *priority;			// Process priority
 
