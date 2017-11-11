@@ -37,7 +37,8 @@ class ProcessAddressSpace {
     unsigned GetNumPages();
 
     TranslationEntry* GetPageTable();
-
+    int getPhyPageNum(int parentPage);
+    bool DemandAllocation(int vpaddress);
   private:
     TranslationEntry *KernelPageTable;	// Assume linear page table translation
 					// for now!

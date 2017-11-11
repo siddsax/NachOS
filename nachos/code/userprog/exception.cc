@@ -107,15 +107,15 @@ ExceptionHandler(ExceptionType which)
     else if ((which==PageFaultException)) {
 	if(pageReplaceAlgo==0){
 		printf("ERROR, fault without page demand");
-	
+	}
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 	int vpaddress = machine->ReadRegister(BadVAddrReg);
 	//KernelPageTable[vpn].physicalPage = 1 + numPagesAllocated;
 	bool allocated = currentThread->space->DemandAllocation(vpaddress);
 
 	ASSERT(allocated);
-	(void) interrupt->SetLevel(oldLevel);  // re-enable interrupts
 	currentThread->SortedInsertInWaitQueue(1000+stats->totalTicks);
+	(void) interrupt->SetLevel(oldLevel);  // re-enable interrupts
 
     }
 //----------------------CUSTOM---------------------------------
@@ -136,13 +136,17 @@ ExceptionHandler(ExceptionType which)
     else if ((which == SyscallException) && (type == SysCall_Exec)) {
        // Copy the executable name into kernel space
        vaddr = machine->ReadRegister(4);
-       machine->ReadMem(vaddr, 1, &memval);
+       
+       bool read = FALSE; 	
+       while(read == FALSE) read = machine->ReadMem(vaddr, 1, &memval);
+
        i = 0;
        while ((*(char*)&memval) != '\0') {
           buffer[i] = (*(char*)&memval);
           i++;
           vaddr++;
-          machine->ReadMem(vaddr, 1, &memval);
+          bool read = FALSE; 	
+          while(read == FALSE) read = machine->ReadMem(vaddr, 1, &memval);
        }
        buffer[i] = (*(char*)&memval);
        //LaunchUserProcess(buffer);
@@ -179,7 +183,10 @@ ExceptionHandler(ExceptionType which)
        child->SaveUserState ();		     		      // Duplicate the register set
        child->ResetReturnValue ();			     // Sets the return register to zero
        child->CreateThreadStack (ForkStartFunction, 0);	// Make it ready for a later context switch
-       child->Schedule ();
+       //child->Schedule ();
+       if(pageReplaceAlgo==0) child->Schedule();
+       else child->SortedInsertInWaitQueue(1000+stats->totalTicks);
+       
        machine->WriteRegister(2, child->GetPID());		// Return value for parent
     }
     else if ((which == SyscallException) && (type == SysCall_Yield)) {
@@ -230,12 +237,14 @@ ExceptionHandler(ExceptionType which)
     }
     else if ((which == SyscallException) && (type == SysCall_PrintString)) {
        vaddr = machine->ReadRegister(4);
-       machine->ReadMem(vaddr, 1, &memval);
+       bool read = FALSE; 	
+       while(read == FALSE) read = machine->ReadMem(vaddr, 1, &memval);
        while ((*(char*)&memval) != '\0') {
           writeDone->P() ;
           console->PutChar(*(char*)&memval);
           vaddr++;
-          machine->ReadMem(vaddr, 1, &memval);
+          bool read = FALSE; 	
+          while(read == FALSE) read = machine->ReadMem(vaddr, 1, &memval);
        }
        // Advance program counters.
        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
