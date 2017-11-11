@@ -38,14 +38,16 @@ LaunchUserProcess(char *filename)
 	printf("Unable to open file %s\n", filename);
 	return;
     }
+    //printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     space = new ProcessAddressSpace(executable);    
     currentThread->space = space;
-
+    currentThread->space->fileName = filename;
+    //printf("\nzzzzzzzz2\n");
     delete executable;			// close file
 
     space->InitUserModeCPURegisters();		// set the initial register values
     space->RestoreContextOnSwitch();		// load page table register
-
+    //printf("\nzzzzzzzz3\n");
     machine->Run();			// jump to the user progam
     ASSERT(FALSE);			// machine->Run never returns;
 					// the address space exits

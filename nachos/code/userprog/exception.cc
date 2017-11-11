@@ -108,11 +108,14 @@ ExceptionHandler(ExceptionType which)
 	if(pageReplaceAlgo==0){
 		printf("ERROR, fault without page demand");
 	}
+	//printf("\nzzzzzzzz4\n");
 	IntStatus oldLevel = interrupt->SetLevel(IntOff);
 	int vpaddress = machine->ReadRegister(BadVAddrReg);
+	// printf("\nzzzzzzzz5\n");
 	//KernelPageTable[vpn].physicalPage = 1 + numPagesAllocated;
 	bool allocated = currentThread->space->DemandAllocation(vpaddress);
-
+	//printf("$$$$$$$$$$$$$$$$$$$$$$$$");
+	// printf("\nzzzzzzzzinfinity\n");
 	ASSERT(allocated);
 	currentThread->SortedInsertInWaitQueue(1000+stats->totalTicks);
 	(void) interrupt->SetLevel(oldLevel);  // re-enable interrupts

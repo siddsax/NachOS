@@ -59,14 +59,15 @@ SwapHeader (NoffHeader *noffH)
 
 ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 {
-    OpenFile *progExecutable = executable;
+    progExecutable = executable;
+   
     NoffHeader noffH;
     unsigned int i, size;
     unsigned vpn, offset;
     TranslationEntry *entry;
     unsigned int pageFrame;
 
-    executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+    progExecutable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) && 
 		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
     	SwapHeader(&noffH);
@@ -87,9 +88,11 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numVirtualPages, size);
 
+    
+
+    KernelPageTable = new TranslationEntry[numVirtualPages];
     if(pageReplaceAlgo==0){ 	
 // first, set up the translation 
-    	KernelPageTable = new TranslationEntry[numVirtualPages];
     	for (i = 0; i < numVirtualPages; i++) {
 		KernelPageTable[i].virtualPage = i;
 		KernelPageTable[i].physicalPage = i+numPagesAllocated;
@@ -133,7 +136,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 
 	// ////////////////////////////////////For demand paging we do not load the executable and no physical page allocated///////////////
 	// first, set up the translation 
-	KernelPageTable = new TranslationEntry[numVirtualPages];
+	//printf("$$$$$$$$$$$$$$$$$$$$$$");
 	for (i = 0; i < numVirtualPages; i++) {
 	        KernelPageTable[i].virtualPage = i;
 		KernelPageTable[i].physicalPage = -1;
@@ -144,6 +147,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 						// a separate page, we could set its 
 						// pages to be read-only
        }
+	
     }	
 }
 
@@ -154,6 +158,13 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 
 ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
 {
+
+    fileName = parentSpace->fileName;
+    progExecutable = fileSystem->Open(fileName);
+    if (progExecutable == NULL) {
+	printf("Unable to open file %s\n", fileName);
+        ASSERT(false);
+    }
     numVirtualPages = parentSpace->GetNumPages();
     unsigned i, size = numVirtualPages * PageSize;
 
@@ -199,6 +210,7 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
 		KernelPageTable[i].virtualPage = i;
 		if(parentPageTable[i].valid == TRUE)
 		{
+			printf("ALLOTED %dth Entry to %d whose parent is %d",i,currentThread->GetPID(),currentThread->GetPPID());
 			//IntStatus oldLevel = interrupt->SetLevel(IntOff);  // disable interrupts
 			KernelPageTable[i].physicalPage = getPhyPageNum(parentPageTable[i].physicalPage); //DONT Replace the parent's page itself 
 			KernelPageTable[i].use = parentPageTable[i].use;
@@ -209,6 +221,19 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
 				machine->mainMemory[KernelPageTable[i].physicalPage*PageSize+k] = machine->mainMemory[parentPageTable[i].physicalPage*PageSize + k];
 			}
 			KernelPageTable[i].dirty = parentPageTable[i].dirty;
+			stats->pageFaultCount++;
+
+		}
+		else
+		{
+			for (i = 0; i < numVirtualPages; i++) 
+			{
+				KernelPageTable[i].physicalPage = -1;
+				KernelPageTable[i].valid = parentPageTable[i].valid;
+				KernelPageTable[i].use = parentPageTable[i].use;
+				KernelPageTable[i].dirty = parentPageTable[i].dirty;
+				KernelPageTable[i].readOnly = parentPageTable[i].readOnly;
+              		}
 		}
 	    }
      }
@@ -219,6 +244,7 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
 bool
 ProcessAddressSpace::DemandAllocation(int vpaddress)
 {
+    
     bool flag=FALSE;
     int vpn = vpaddress/PageSize;
     int phyPageNum = getPhyPageNum(-1);
@@ -226,14 +252,21 @@ ProcessAddressSpace::DemandAllocation(int vpaddress)
     //-----------------backup related to page replacement to be introduced-----------------------
 
     NoffHeader noffH;
+    progExecutable = fileSystem->Open(fileName);
     progExecutable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-
+   
+    //printf("\nzzzzzzzz6\n");
 
     if ((noffH.noffMagic != NOFFMAGIC) &&
                 (WordToHost(noffH.noffMagic) == NOFFMAGIC))
         SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
     
+
+    if (progExecutable == NULL) {
+	    printf("Unable to open file \n");
+	    ASSERT(false);
+    }    
     progExecutable->ReadAt(&(machine->mainMemory[phyPageNum * PageSize]), PageSize, noffH.code.inFileAddr + vpn*PageSize);
     
     KernelPageTable[vpn].valid = TRUE;
