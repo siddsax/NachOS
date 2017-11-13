@@ -1,11 +1,11 @@
-// progtest.cc 
+// progtest.cc
 //	Test routines for demonstrating that Nachos can load
-//	a user program and execute it.  
+//	a user program and execute it.
 //
 //	Also, routines for testing the Console hardware device.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -15,8 +15,8 @@
 #include "synch.h"
 #include "filesys.h"
 
-void
-BatchStartFunction(int dummy) {
+void BatchStartFunction(int dummy)
+{
     currentThread->Startup();
     machine->Run();
 }
@@ -27,8 +27,8 @@ BatchStartFunction(int dummy) {
 //	memory, and jump to it.
 //----------------------------------------------------------------------
 
-void
-LaunchUserProcess(char *filename) {
+void LaunchUserProcess(char *filename)
+{
     OpenFile *executable = fileSystem->Open(filename);
     ProcessAddressSpace *space;
 
@@ -37,20 +37,19 @@ LaunchUserProcess(char *filename) {
         printf("Unable to open file %s\n", filename);
         return;
     }
-    //printf("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+
     space = new ProcessAddressSpace(executable);
     currentThread->space = space;
-    //---------------------CUSTOM------------------------
-    currentThread->space->fileName = filename;
-    //---------------------------------------------------
-    //printf("\nzzzzzzzz2\n");
-    delete executable;            // close file
 
-    space->InitUserModeCPURegisters();        // set the initial register values
-    space->RestoreContextOnSwitch();        // load page table register
+    currentThread->space->fileName = filename;
+
+    delete executable; // close file
+
+    space->InitUserModeCPURegisters(); // set the initial register values
+    space->RestoreContextOnSwitch();   // load page table register
     //printf("\nzzzzzzzz3\n");
-    machine->Run();            // jump to the user progam
-    ASSERT(FALSE);            // machine->Run never returns;
+    machine->Run(); // jump to the user progam
+    ASSERT(FALSE);  // machine->Run never returns;
     // the address space exits
     // by doing the syscall "exit"
 }
@@ -77,8 +76,8 @@ static void WriteDone(int arg) { writeDone->V(); }
 //	the output.  Stop when the user types a 'q'.
 //----------------------------------------------------------------------
 
-void
-ConsoleTest(char *in, char *out) {
+void ConsoleTest(char *in, char *out)
+{
     char ch;
 
     console = new Console(in, out, ReadAvail, WriteDone, 0);
@@ -87,11 +86,12 @@ ConsoleTest(char *in, char *out) {
 
     for (;;)
     {
-        readAvail->P();        // wait for character to arrive
+        readAvail->P(); // wait for character to arrive
         ch = console->GetChar();
-        console->PutChar(ch);    // echo it!
-        writeDone->P();        // wait for write to finish
-        if (ch == 'q') return;  // if q, quit
+        console->PutChar(ch); // echo it!
+        writeDone->P();       // wait for write to finish
+        if (ch == 'q')
+            return; // if q, quit
     }
 }
 
@@ -102,8 +102,8 @@ ConsoleTest(char *in, char *out) {
 //      memory, and invoke the scheduler.
 //---------------------------------------------------------------------------------------------------
 
-void
-ReadInputAndFork(char *filename) {
+void ReadInputAndFork(char *filename)
+{
     OpenFile *inFile = fileSystem->Open(filename);
     char c, buffer[16];
     unsigned batchSize = 0, bytesRead, charPointer, i;
@@ -176,7 +176,7 @@ ReadInputAndFork(char *filename) {
         NachOSThread *child = new NachOSThread(buffer, priority[i]);
         child->space = new ProcessAddressSpace(inFile);
         delete inFile;
-        child->space->InitUserModeCPURegisters();             // set the initial register values
+        child->space->InitUserModeCPURegisters(); // set the initial register values
         child->SaveUserState();
         child->CreateThreadStack(BatchStartFunction, 0);
         child->Schedule();
@@ -191,8 +191,8 @@ ReadInputAndFork(char *filename) {
     // Find out if all threads have called exit
     for (i = 0; i < thread_index; i++)
     {
-        if (!exitThreadArray[i]) break;
+        if (!exitThreadArray[i])
+            break;
     }
     currentThread->Exit(i == thread_index, 0);
 }
-

@@ -1,4 +1,4 @@
-// exception.cc 
+// exception.cc
 //	Entry point into the Nachos kernel from user programs.
 //	There are two kinds of things that can cause control to
 //	transfer back to here from user code:
@@ -9,7 +9,7 @@
 //
 //	exceptions -- The user code does something that the CPU can't handle.
 //	For instance, accessing memory that doesn't exist, arithmetic errors,
-//	etc.  
+//	etc.
 //
 //	Interrupts (which can also cause control to transfer from user
 //	code into the Nachos kernel) are handled elsewhere.
@@ -18,7 +18,7 @@
 // Everything else core dumps.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -41,12 +41,12 @@
 //		arg3 -- r6
 //		arg4 -- r7
 //
-//	The result of the system call, if any, must be put back into r2. 
+//	The result of the system call, if any, must be put back into r2.
 //
 // And don't forget to increment the pc before returning. (Or else you'll
 // loop making the same system call forever!
 //
-//	"which" is the kind of exception.  The list of possible exceptions 
+//	"which" is the kind of exception.  The list of possible exceptions
 //	are in machine.h.
 //----------------------------------------------------------------------
 static Semaphore *readAvail;
@@ -58,15 +58,17 @@ static void WriteDone(int arg) { writeDone->V(); }
 
 extern void LaunchUserProcess(char *);
 
-void
-ForkStartFunction(int dummy) {
+void ForkStartFunction(int dummy)
+{
     currentThread->Startup();
     machine->Run();
 }
 
-static void ConvertIntToHex(unsigned v, Console *console) {
+static void ConvertIntToHex(unsigned v, Console *console)
+{
     unsigned x;
-    if (v == 0) return;
+    if (v == 0)
+        return;
     ConvertIntToHex(v / 16, console);
     x = v % 16;
     if (x < 10)
@@ -81,11 +83,11 @@ static void ConvertIntToHex(unsigned v, Console *console) {
     }
 }
 
-void
-ExceptionHandler(ExceptionType which) {
+void ExceptionHandler(ExceptionType which)
+{
     int type = machine->ReadRegister(2);
     int memval, vaddr, printval, tempval, exp;
-    unsigned printvalus;    // Used for printing in hex
+    unsigned printvalus; // Used for printing in hex
     if (!initializedConsoleSemaphores)
     {
         readAvail = new Semaphore("read avail", 0);
@@ -93,40 +95,37 @@ ExceptionHandler(ExceptionType which) {
         initializedConsoleSemaphores = true;
     }
     Console *console = new Console(NULL, NULL, ReadAvail, WriteDone, 0);
-    int exitcode;        // Used in SysCall_Exit
+    int exitcode; // Used in SysCall_Exit
     unsigned i;
-    char buffer[1024];        // Used in SysCall_Exec
-    int waitpid;        // Used in SysCall_Join
-    int whichChild;        // Used in SysCall_Join
-    NachOSThread *child;        // Used by SysCall_Fork
-    unsigned sleeptime;        // Used by SysCall_Sleep
+    char buffer[1024];   // Used in SysCall_Exec
+    int waitpid;         // Used in SysCall_Join
+    int whichChild;      // Used in SysCall_Join
+    NachOSThread *child; // Used by SysCall_Fork
+    unsigned sleeptime;  // Used by SysCall_Sleep
 
     if ((which == SyscallException) && (type == SysCall_Halt))
     {
         DEBUG('a', "Shutdown, initiated by user program.\n");
         interrupt->Halt();
     }
-//----------------------CUSTOM---------------------------------------------
+    //----------------------CUSTOM---------------------------------------------
     else if ((which == PageFaultException))
     {
         if (pageReplaceAlgo == 0)
         {
             printf("ERROR, fault without page demand");
         }
-        //printf("\nzzzzzzzz4\n");
-        IntStatus oldLevel = interrupt->SetLevel(IntOff);
-        int vpaddress = machine->ReadRegister(BadVAddrReg);
-        // printf("\nzzzzzzzz5\n");
-        //KernelPageTable[vpn].physicalPage = 1 + numPagesAllocated;
-        bool allocated = currentThread->space->DemandAllocation(vpaddress);
-        //printf("$$$$$$$$$$$$$$$$$$$$$$$$");
-        // printf("\nzzzzzzzzinfinity\n");
-        ASSERT(allocated);
-        currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
-        (void) interrupt->SetLevel(oldLevel);  // re-enable interrupts
 
+        IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+        int vpaddress = machine->ReadRegister(BadVAddrReg);
+        ASSERT(currentThread->space->DemandAllocation(vpaddress));
+
+        currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
+
+        (void)interrupt->SetLevel(oldLevel); // re-enable interrupts
     }
-//----------------------CUSTOM---------------------------------
+    //----------------------CUSTOM---------------------------------
     else if ((which == SyscallException) && (type == SysCall_Exit))
     {
         exitcode = machine->ReadRegister(4);
@@ -139,7 +138,8 @@ ExceptionHandler(ExceptionType which) {
         // Find out if all threads have called exit
         for (i = 0; i < thread_index; i++)
         {
-            if (!exitThreadArray[i]) break;
+            if (!exitThreadArray[i])
+                break;
         }
         currentThread->Exit(i == thread_index, exitcode);
     }
@@ -149,18 +149,20 @@ ExceptionHandler(ExceptionType which) {
         vaddr = machine->ReadRegister(4);
 
         bool read = FALSE;
-        while (read == FALSE) read = machine->ReadMem(vaddr, 1, &memval);
+        while (read == FALSE)
+            read = machine->ReadMem(vaddr, 1, &memval);
 
         i = 0;
-        while ((*(char *) &memval) != '\0')
+        while ((*(char *)&memval) != '\0')
         {
-            buffer[i] = (*(char *) &memval);
+            buffer[i] = (*(char *)&memval);
             i++;
             vaddr++;
             bool read = FALSE;
-            while (read == FALSE) read = machine->ReadMem(vaddr, 1, &memval);
+            while (read == FALSE)
+                read = machine->ReadMem(vaddr, 1, &memval);
         }
-        buffer[i] = (*(char *) &memval);
+        buffer[i] = (*(char *)&memval);
         //LaunchUserProcess(buffer);
     }
     else if ((which == SyscallException) && (type == SysCall_Join))
@@ -187,6 +189,18 @@ ExceptionHandler(ExceptionType which) {
             machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
         }
     }
+    else if ((which == SyscallException) && (type == SysCall_ShmAllocate))
+    {
+        unsigned int size = machine->ReadRegister(4);
+        unsigned int startingVirtualAddress = currentThread->space->AllocateSharedMemory(size);
+
+        machine->WriteRegister(2, startingVirtualAddress);
+
+        // Advance program counters
+        machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
+        machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
+        machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
+    }
     else if ((which == SyscallException) && (type == SysCall_Fork))
     {
         // Advance program counters.
@@ -196,16 +210,13 @@ ExceptionHandler(ExceptionType which) {
 
         child = new NachOSThread("Forked thread", GET_NICE_FROM_PARENT);
 
-        child->space = new ProcessAddressSpace(currentThread->space);  // Duplicates the address space
-        child->SaveUserState();                          // Duplicate the register set
-        child->ResetReturnValue();                 // Sets the return register to zero
-        child->CreateThreadStack(ForkStartFunction, 0);    // Make it ready for a later context switch
-        printf("########################");
+        child->space = new ProcessAddressSpace(currentThread->space); // Duplicates the address space
+        child->SaveUserState();                                       // Duplicate the register set
+        child->ResetReturnValue();                                    // Sets the return register to zero
+        child->CreateThreadStack(ForkStartFunction, 0);               // Make it ready for a later context switch
         child->Schedule();
-        //if(pageReplaceAlgo==0) child->Schedule();
-        //else child->SortedInsertInWaitQueue(1000+stats->totalTicks);
-        //machine->WriteRegister(2, 2);
-        machine->WriteRegister(2, child->GetPID());        // Return value for parent
+
+        machine->WriteRegister(2, child->GetPID()); // Return value for parent
     }
     else if ((which == SyscallException) && (type == SysCall_Yield))
     {
@@ -254,8 +265,8 @@ ExceptionHandler(ExceptionType which) {
     }
     else if ((which == SyscallException) && (type == SysCall_PrintChar))
     {
-        writeDone->P();        // wait for previous write to finish
-        console->PutChar(machine->ReadRegister(4));   // echo it!
+        writeDone->P();                             // wait for previous write to finish
+        console->PutChar(machine->ReadRegister(4)); // echo it!
         // Advance program counters.
         machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
@@ -265,14 +276,16 @@ ExceptionHandler(ExceptionType which) {
     {
         vaddr = machine->ReadRegister(4);
         bool read = FALSE;
-        while (read == FALSE) read = machine->ReadMem(vaddr, 1, &memval);
-        while ((*(char *) &memval) != '\0')
+        while (read == FALSE)
+            read = machine->ReadMem(vaddr, 1, &memval);
+        while ((*(char *)&memval) != '\0')
         {
             writeDone->P();
-            console->PutChar(*(char *) &memval);
+            console->PutChar(*(char *)&memval);
             vaddr++;
             bool read = FALSE;
-            while (read == FALSE) read = machine->ReadMem(vaddr, 1, &memval);
+            while (read == FALSE)
+                read = machine->ReadMem(vaddr, 1, &memval);
         }
         // Advance program counters.
         machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
@@ -290,7 +303,7 @@ ExceptionHandler(ExceptionType which) {
     else if ((which == SyscallException) && (type == SysCall_GetPA))
     {
         vaddr = machine->ReadRegister(4);
-        machine->WriteRegister(2, machine->GetPA(vaddr));  // Return value
+        machine->WriteRegister(2, machine->GetPA(vaddr)); // Return value
         // Advance program counters.
         machine->WriteRegister(PrevPCReg, machine->ReadRegister(PCReg));
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
@@ -339,7 +352,7 @@ ExceptionHandler(ExceptionType which) {
     }
     else if ((which == SyscallException) && (type == SysCall_PrintIntHex))
     {
-        printvalus = (unsigned) machine->ReadRegister(4);
+        printvalus = (unsigned)machine->ReadRegister(4);
         writeDone->P();
         console->PutChar('0');
         writeDone->P();
@@ -372,4 +385,3 @@ ExceptionHandler(ExceptionType which) {
         ASSERT(FALSE);
     }
 }
-

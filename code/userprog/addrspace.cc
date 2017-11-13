@@ -28,7 +28,8 @@
 //----------------------------------------------------------------------
 
 static void
-SwapHeader(NoffHeader *noffH) {
+SwapHeader(NoffHeader *noffH)
+{
     noffH->noffMagic = WordToHost(noffH->noffMagic);
     noffH->code.size = WordToHost(noffH->code.size);
     noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
@@ -52,11 +53,12 @@ SwapHeader(NoffHeader *noffH) {
 //	First, set up the translation from program memory to physical
 //	memory.  For now, this is really simple (1:1), since we are
 //	only uniprogramming, and we have a single unsegmented page table
-//
 //	"executable" is the file containing the object code to load into memory
+//
 //----------------------------------------------------------------------
 
-ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
+ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
+{
     progExecutable = executable;
 
     NoffHeader noffH;
@@ -65,23 +67,18 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
     TranslationEntry *entry;
     unsigned int pageFrame;
 
-    progExecutable->ReadAt((char *) &noffH, sizeof(noffH), 0);
+    progExecutable->ReadAt((char *)&noffH, sizeof(noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) &&
         (WordToHost(noffH.noffMagic) == NOFFMAGIC))
         SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
-    // how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size +
-           UserStackSize; // we need to increase the size
-    // to leave room for the stack
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
+
     numVirtualPages = divRoundUp(size, PageSize);
     size = numVirtualPages * PageSize;
 
-    ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages); // check we're not trying
-    // to run anything too big --
-    // at least until we have
-    // virtual memory
+    ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n",
           numVirtualPages, size);
@@ -89,7 +86,6 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
     KernelPageTable = new TranslationEntry[numVirtualPages];
     if (pageReplaceAlgo == 0)
     {
-        // first, set up the translation
         for (i = 0; i < numVirtualPages; i++)
         {
             KernelPageTable[i].virtualPage = i;
@@ -97,17 +93,13 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
             KernelPageTable[i].valid = TRUE;
             KernelPageTable[i].use = FALSE;
             KernelPageTable[i].dirty = FALSE;
-            KernelPageTable[i].readOnly = FALSE; // if the code segment was entirely on
-            // a separate page, we could set its
-            // pages to be read-only
+            KernelPageTable[i].readOnly = FALSE;
         }
-        // zero out the entire address space, to zero the unitialized data segment
-        // and the stack segment
+
         bzero(&machine->mainMemory[numPagesAllocated * PageSize], size);
 
         numPagesAllocated += numVirtualPages;
 
-        // then, copy in the code and data segments into memory
         if (noffH.code.size > 0)
         {
             DEBUG('a', "Initializing code segment, at 0x%x, size %d\n",
@@ -116,8 +108,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
             offset = noffH.code.virtualAddr % PageSize;
             entry = &KernelPageTable[vpn];
             pageFrame = entry->physicalPage;
-            executable->ReadAt(&(machine->mainMemory[pageFrame * PageSize + offset]),
-                               noffH.code.size, noffH.code.inFileAddr);
+            executable->ReadAt(&(machine->mainMemory[pageFrame * PageSize + offset]), noffH.code.size, noffH.code.inFileAddr);
         }
         if (noffH.initData.size > 0)
         {
@@ -127,16 +118,11 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
             offset = noffH.initData.virtualAddr % PageSize;
             entry = &KernelPageTable[vpn];
             pageFrame = entry->physicalPage;
-            executable->ReadAt(&(machine->mainMemory[pageFrame * PageSize + offset]),
-                               noffH.initData.size, noffH.initData.inFileAddr);
+            executable->ReadAt(&(machine->mainMemory[pageFrame * PageSize + offset]), noffH.initData.size, noffH.initData.inFileAddr);
         }
     }
     else
     {
-
-        // ////////////////////////////////////For demand paging we do not load the executable and no physical page allocated///////////////
-        // first, set up the translation
-        //printf("$$$$$$$$$$$$$$$$$$$$$$");
         for (i = 0; i < numVirtualPages; i++)
         {
             KernelPageTable[i].virtualPage = i;
@@ -144,9 +130,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
             KernelPageTable[i].valid = FALSE;
             KernelPageTable[i].use = FALSE;
             KernelPageTable[i].dirty = FALSE;
-            KernelPageTable[i].readOnly = FALSE; // if the code segment was entirely on
-            // a separate page, we could set its
-            // pages to be read-only
+            KernelPageTable[i].readOnly = FALSE;
         }
     }
 }
@@ -156,8 +140,8 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable) {
 //      We need to duplicate the address space of the parent.
 //----------------------------------------------------------------------
 
-ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace) {
-
+ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
+{
     fileName = parentSpace->fileName;
     progExecutable = fileSystem->Open(fileName);
     if (progExecutable == NULL)
@@ -166,105 +150,110 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace) {
         ASSERT(false);
     }
     numVirtualPages = parentSpace->GetNumPages();
-    unsigned i, size = numVirtualPages * PageSize;
+    unsigned i, j, size = numVirtualPages * PageSize;
 
-    ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages); // check we're not trying
-    // to run anything too big --
-    // at least until we have
-    // virtual memory
+    ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n",
           numVirtualPages, size);
-    // first, set up the translation
+
     TranslationEntry *parentPageTable = parentSpace->GetPageTable();
     KernelPageTable = new TranslationEntry[numVirtualPages];
 
-    if (pageReplaceAlgo == 0)
+    unsigned startAddrParent, startAddrChild;
+
+    for (int i = 0; i < numVirtualPages; i++)
     {
-        for (i = 0; i < numVirtualPages; i++)
+        KernelPageTable[i].virtualPage = i;
+        KernelPageTable[i].use = parentPageTable[i].use;
+        KernelPageTable[i].readOnly = parentPageTable[i].readOnly;
+        KernelPageTable[i].dirty = parentPageTable[i].dirty;
+        KernelPageTable[i].shared = parentPageTable[i].shared;
+
+        if (parentPageTable[i].valid == TRUE && parentPageTable[i].shared == FALSE)
         {
-            KernelPageTable[i].virtualPage = i;
-            KernelPageTable[i].physicalPage = i + numPagesAllocated;
+            KernelPageTable[i].physicalPage = GetNextFreePage(parentPageTable[i].physicalPage);
+            KernelPageTable[i].valid = TRUE;
+
+            startAddrParent = parentPageTable[i].physicalPage * PageSize;
+            startAddrChild = KernelPageTable[i].physicalPage * PageSize;
+
+            for (int j = 0; j < PageSize; j++)
+            {
+                machine->mainMemory[startAddrChild + j] = machine->mainMemory[startAddrParent + j];
+            }
+            stats->pageFaultCount++;
+
+            currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
+        }
+        else
+        {
+            KernelPageTable[i].physicalPage = parentPageTable[i].physicalPage;
             KernelPageTable[i].valid = parentPageTable[i].valid;
-            KernelPageTable[i].use = parentPageTable[i].use;
-            KernelPageTable[i].dirty = parentPageTable[i].dirty;
-            KernelPageTable[i].readOnly = parentPageTable[i].readOnly; // if the code segment was entirely on
-            // a separate page, we could set its
-            // pages to be read-only
-        }
-
-        // Copy the contents
-        unsigned startAddrParent = parentPageTable[0].physicalPage * PageSize;
-        unsigned startAddrChild = numPagesAllocated * PageSize;
-        for (i = 0; i < size; i++)
-        {
-            machine->mainMemory[startAddrChild + i] = machine->mainMemory[startAddrParent + i];
-        }
-
-        numPagesAllocated += numVirtualPages;
-    }
-    else
-    {
-        //-----------------------CUSTOM-------------------------------------------------------
-
-        unsigned startAddrParent = parentPageTable[0].physicalPage * PageSize;
-        for (int i = 0; i < numVirtualPages; i++)
-        {
-            KernelPageTable[i].virtualPage = i;
-            if (parentPageTable[i].valid == TRUE)
-            {
-                printf("\nALLOTED %dth Entry to son of %d\n", i, currentThread->GetPID());
-                //IntStatus oldLevel = interrupt->SetLevel(IntOff);  // disable interrupts
-                KernelPageTable[i].physicalPage = getPhyPageNum(
-                        parentPageTable[i].physicalPage); //DONT Replace the parent's page itself
-                KernelPageTable[i].use = parentPageTable[i].use;
-                KernelPageTable[i].readOnly = parentPageTable[i].readOnly; // if the code segment was entirely on
-                // a separate page, we could set its
-                // pages to be read-only
-                for (int k = 0; k < PageSize; k++)
-                {
-                    //int a = KernelPageTable[i].physicalPage*PageSize + k;
-                    //int b = parentPageTable[i].physicalPage*PageSize + k;
-                    //printf("#######\n%d,%d\n#########",a,b);
-                    machine->mainMemory[KernelPageTable[i].physicalPage * PageSize + k] = machine->mainMemory[
-                            parentPageTable[i].physicalPage * PageSize + k];
-                }
-                //printf("\n##########%d#####\n",i);
-                KernelPageTable[i].dirty = parentPageTable[i].dirty;
-                stats->pageFaultCount++;
-                currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
-            }
-            else
-            {
-                KernelPageTable[i].physicalPage = -1;
-                KernelPageTable[i].valid = parentPageTable[i].valid;
-                KernelPageTable[i].use = parentPageTable[i].use;
-                KernelPageTable[i].dirty = parentPageTable[i].dirty;
-                KernelPageTable[i].readOnly = parentPageTable[i].readOnly;
-            }
         }
     }
-    //------------------------------------------------------------------------------------
 }
 
-//--------------------CUSTOM--------------------------------------------------
-bool ProcessAddressSpace::DemandAllocation(int vpaddress) {
+unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
+{
+    unsigned int numRequiredPages = numVirtualPages + divRoundUp(size, PageSize);
+
+    ASSERT(numRequiredPages <= NumPhysPages)
+
+    TranslationEntry *newPageTable = new TranslationEntry[numRequiredPages];
+
+    unsigned int i;
+    for (i = 0; i < numVirtualPages; i++)
+    {
+        newPageTable[i].virtualPage = KernelPageTable[i].virtualPage;
+        newPageTable[i].physicalPage = KernelPageTable[i].physicalPage;
+        newPageTable[i].valid = KernelPageTable[i].valid;
+        newPageTable[i].use = KernelPageTable[i].use;
+        newPageTable[i].dirty = KernelPageTable[i].dirty;
+        newPageTable[i].readOnly = KernelPageTable[i].readOnly;
+        newPageTable[i].shared = KernelPageTable[i].shared;
+    }
+
+    for (i = numVirtualPages; i < numRequiredPages; i++)
+    {
+        newPageTable[i].virtualPage = i;
+        newPageTable[i].physicalPage = GetNextFreePage(-1);
+        newPageTable[i].valid = TRUE;
+        newPageTable[i].use = FALSE;
+        newPageTable[i].dirty = FALSE;
+        newPageTable[i].readOnly = FALSE;
+        newPageTable[i].shared = TRUE;
+    }
+
+    int returnValue = numVirtualPages;
+
+    delete KernelPageTable;
+    KernelPageTable = newPageTable;
+
+    numVirtualPages = numRequiredPages;
+    RestoreContextOnSwitch();
+
+    return returnValue * PageSize;
+}
+
+bool ProcessAddressSpace::DemandAllocation(int vpaddress)
+{
 
     bool flag = FALSE;
     int vpn = vpaddress / PageSize;
-    int phyPageNum = getPhyPageNum(-1);
+    int phyPageNum = GetNextFreePage(-1);
+
     bzero(&machine->mainMemory[phyPageNum * PageSize], PageSize);
     //-----------------backup related to page replacement to be introduced-----------------------
 
     NoffHeader noffH;
     progExecutable = fileSystem->Open(fileName);
-    progExecutable->ReadAt((char *) &noffH, sizeof(noffH), 0);
+    progExecutable->ReadAt((char *)&noffH, sizeof(noffH), 0);
 
-    //printf("\nzzzzzzzz6\n");
-
-    if ((noffH.noffMagic != NOFFMAGIC) &&
-        (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    {
         SwapHeader(&noffH);
+    }
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
     if (progExecutable == NULL)
@@ -272,8 +261,7 @@ bool ProcessAddressSpace::DemandAllocation(int vpaddress) {
         printf("Unable to open file \n");
         ASSERT(false);
     }
-    progExecutable->ReadAt(&(machine->mainMemory[phyPageNum * PageSize]), PageSize,
-                           noffH.code.inFileAddr + vpn * PageSize);
+    progExecutable->ReadAt(&(machine->mainMemory[phyPageNum * PageSize]), PageSize, noffH.code.inFileAddr + vpn * PageSize);
 
     KernelPageTable[vpn].valid = TRUE;
     KernelPageTable[vpn].dirty = FALSE;
@@ -283,12 +271,13 @@ bool ProcessAddressSpace::DemandAllocation(int vpaddress) {
     return flag;
 }
 
-//Will be useful when doing page replacement---------------------
-int ProcessAddressSpace::getPhyPageNum(int parentPage) {
-    //-------------------Case when Demand Paging is not used is done by old method only so no need to check here----------------
-    //---------ASSUMING LARGE NUMBER OF PHYSICAL PAGES TO TEST DEMAND PAGING-----------
-    // -------------------dont replace the parentPage (in case of fork)----------------------------------------------------
-    return ++numPagesAllocated;
+unsigned int ProcessAddressSpace::GetNextFreePage(int currentPage)
+{
+    switch (pageReplaceAlgo)
+    {
+    default:
+        return numPagesAllocated++;
+    }
 }
 
 //---------------------------------------------------------------------------------
@@ -297,7 +286,8 @@ int ProcessAddressSpace::getPhyPageNum(int parentPage) {
 // 	Dealloate an address space.  Nothing for now!
 //----------------------------------------------------------------------
 
-ProcessAddressSpace::~ProcessAddressSpace() {
+ProcessAddressSpace::~ProcessAddressSpace()
+{
     delete KernelPageTable;
 }
 
@@ -311,7 +301,8 @@ ProcessAddressSpace::~ProcessAddressSpace() {
 //	when this thread is context switched out.
 //----------------------------------------------------------------------
 
-void ProcessAddressSpace::InitUserModeCPURegisters() {
+void ProcessAddressSpace::InitUserModeCPURegisters()
+{
     int i;
 
     for (i = 0; i < NumTotalRegs; i++)
@@ -339,7 +330,8 @@ void ProcessAddressSpace::InitUserModeCPURegisters() {
 //	For now, nothing!
 //----------------------------------------------------------------------
 
-void ProcessAddressSpace::SaveContextOnSwitch() {
+void ProcessAddressSpace::SaveContextOnSwitch()
+{
 }
 
 //----------------------------------------------------------------------
@@ -350,17 +342,20 @@ void ProcessAddressSpace::SaveContextOnSwitch() {
 //      For now, tell the machine where to find the page table.
 //----------------------------------------------------------------------
 
-void ProcessAddressSpace::RestoreContextOnSwitch() {
+void ProcessAddressSpace::RestoreContextOnSwitch()
+{
     machine->KernelPageTable = KernelPageTable;
     machine->KernelPageTableSize = numVirtualPages;
 }
 
 unsigned
-ProcessAddressSpace::GetNumPages() {
+ProcessAddressSpace::GetNumPages()
+{
     return numVirtualPages;
 }
 
 TranslationEntry *
-ProcessAddressSpace::GetPageTable() {
+ProcessAddressSpace::GetPageTable()
+{
     return KernelPageTable;
 }
