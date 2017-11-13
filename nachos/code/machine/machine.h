@@ -187,6 +187,12 @@ class Machine {
     TranslationEntry *KernelPageTable;
     unsigned int KernelPageTableSize;
 
+    // =========================== CUSTOM ===============================
+    TranslationEntry *InvertedPageTable;
+    List *lruPageQueue;
+    int *lruClockQueue;
+    // ==================================================================
+
   private:
     bool singleStep;		// drop back into the debugger after each
 				// simulated instruction

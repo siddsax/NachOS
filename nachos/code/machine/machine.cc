@@ -72,6 +72,14 @@ Machine::Machine(bool debug)
     KernelPageTable = NULL;
 #endif
 
+// ======================= CUSTOM ==================================
+    if(pageReplaceAlgo == LRU) { lruPageQueue = new List; }
+    else if(pageReplaceAlgo == LRUCLOCK) { 
+        lruClockQueue = new int[NumPhysPages+5];  // +5 for safety
+        for(int i=0 ; i<NumPhysPages ; i++) { lruClockQueue[i] = 0; } 
+    }
+// =================================================================
+
     singleStep = debug;
     CheckEndian();
 }

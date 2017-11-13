@@ -48,20 +48,23 @@ extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 extern unsigned numPagesAllocated;		// number of physical frames allocated
+//-----------------------------------------CUSTOM----------------------------------
+extern int schedulingAlgo;		// Scheduling algorithm to simulate
+extern int pageReplaceAlgo;
+//---------------------------------------------------------------------------------
 
 extern NachOSThread *threadArray[];  // Array of thread pointers
 extern unsigned thread_index;                  // Index into this array (also used to assign unique pid)
 extern bool initializedConsoleSemaphores;	// Used to initialize the semaphores for console I/O exactly once
 extern bool exitThreadArray[];		// Marks exited threads
 
-extern int schedulingAlgo;		// Scheduling algorithm to simulate
+
 extern char **batchProcesses;		// Names of batch executables
 extern int *priority;			// Process priority
 
 extern int cpu_burst_start_time;	// Records the start of current CPU burst
 extern int completionTimeArray[];	// Records the completion time of all simulated threads
 extern bool excludeMainThread;		// Used by completion time statistics calculation
-
 class TimeSortedWaitQueue {		// Needed to implement syscall_wrapper_Sleep
 private:
    NachOSThread *t;				// NachOSThread pointer of the sleeping thread
