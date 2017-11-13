@@ -13,8 +13,7 @@
 #include "syscall.h"
 
 int
-main()
-{
+main() {
     syscall_wrapper_PrintString("hello world\n");
     syscall_wrapper_PrintString("Executed ");
     syscall_wrapper_PrintInt(syscall_wrapper_GetNumInstr());

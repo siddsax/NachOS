@@ -18,37 +18,37 @@
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */
-#define SysCall_Halt		0
-#define SysCall_Exit		1
-#define SysCall_Exec		2
-#define SysCall_Join		3
-#define SysCall_Create		4
-#define SysCall_Open		5
-#define SysCall_Read		6
-#define SysCall_Write		7
-#define SysCall_Close		8
-#define SysCall_Fork		9
-#define SysCall_Yield		10
+#define SysCall_Halt        0
+#define SysCall_Exit        1
+#define SysCall_Exec        2
+#define SysCall_Join        3
+#define SysCall_Create        4
+#define SysCall_Open        5
+#define SysCall_Read        6
+#define SysCall_Write        7
+#define SysCall_Close        8
+#define SysCall_Fork        9
+#define SysCall_Yield        10
 
 // New syscalls defined by Mainak
 
-#define SysCall_PrintInt	11
-#define SysCall_PrintChar	12
-#define SysCall_PrintString	13
-#define SysCall_GetReg		14
-#define SysCall_GetPA		15
-#define SysCall_GetPID		16
-#define SysCall_GetPPID		17
-#define SysCall_Sleep		18
-#define SysCall_Time		19
-#define SysCall_PrintIntHex	20
-#define SysCall_SemGet		21
-#define SysCall_SemOp		22
-#define SysCall_SemCtl		23
-#define SysCall_CondGet		24
-#define SysCall_CondOp		25
-#define SysCall_CondRemove	26
-#define SysCall_ShmAllocate	27
+#define SysCall_PrintInt    11
+#define SysCall_PrintChar    12
+#define SysCall_PrintString    13
+#define SysCall_GetReg        14
+#define SysCall_GetPA        15
+#define SysCall_GetPID        16
+#define SysCall_GetPPID        17
+#define SysCall_Sleep        18
+#define SysCall_Time        19
+#define SysCall_PrintIntHex    20
+#define SysCall_SemGet        21
+#define SysCall_SemOp        22
+#define SysCall_SemCtl        23
+#define SysCall_CondGet        24
+#define SysCall_CondOp        25
+#define SysCall_CondRemove    26
+#define SysCall_ShmAllocate    27
 #define SysCall_NumInstr        50
 
 #ifndef IN_ASM
@@ -64,27 +64,27 @@
  */
 
 /* Stop Nachos, and print out performance stats */
-void syscall_wrapper_Halt();		
- 
+void syscall_wrapper_Halt();
+
 
 /* Address space control operations: Exit, Exec, and Join */
 
 /* This user program is done (status = 0 means exited normally). */
-void syscall_wrapper_Exit(int status);	
+void syscall_wrapper_Exit(int status);
 
 /* A unique identifier for an executing user program (address space) */
 /* This is same as PID. */
-typedef int SpaceId;	
- 
+typedef int SpaceId;
+
 /* Run the executable, stored in the Nachos file "name". Doesn't return.
  */
 void syscall_wrapper_Exec(char *name);
- 
+
 /* Only return once the the user program "id" has finished.  
  * Return the exit status.
  */
-int syscall_wrapper_Join(SpaceId id); 	
- 
+int syscall_wrapper_Join(SpaceId id);
+
 
 /* File system operations: Create, Open, Read, Write, Close
  * These functions are patterned after UNIX -- files represent
@@ -94,9 +94,9 @@ int syscall_wrapper_Join(SpaceId id);
  * note that the Nachos file system has a stub implementation, which
  * will work for the purposes of testing out these routines.
  */
- 
+
 /* A unique identifier for an open Nachos file. */
-typedef int OpenFileId;	
+typedef int OpenFileId;
 
 /* when an address space starts up, it has two open files, representing 
  * keyboard input and display output (in UNIX terms, stdin and stdout).
@@ -104,9 +104,9 @@ typedef int OpenFileId;
  * the console device.
  */
 
-#define ConsoleInput	0  
-#define ConsoleOutput	1  
- 
+#define ConsoleInput    0
+#define ConsoleOutput    1
+
 /* Create a Nachos file, with "name" */
 void syscall_wrapper_Create(char *name);
 
@@ -142,45 +142,46 @@ int syscall_wrapper_Fork();
 /* Yield the CPU to another runnable thread, whether in this address space 
  * or not. 
  */
-void syscall_wrapper_Yield();		
+void syscall_wrapper_Yield();
 
 // New definitions
 
-void syscall_wrapper_PrintInt (int x);
+void syscall_wrapper_PrintInt(int x);
 
-void syscall_wrapper_PrintIntHex (int x);
+void syscall_wrapper_PrintIntHex(int x);
 
-void syscall_wrapper_PrintChar (char x);
+void syscall_wrapper_PrintChar(char x);
 
-void syscall_wrapper_PrintString (char *x);
+void syscall_wrapper_PrintString(char *x);
 
-int syscall_wrapper_GetReg (int regno);
+int syscall_wrapper_GetReg(int regno);
 
-int syscall_wrapper_GetPA (unsigned vaddr);
+int syscall_wrapper_GetPA(unsigned vaddr);
 
-int syscall_wrapper_GetPID (void);
+int syscall_wrapper_GetPID(void);
 
-int syscall_wrapper_GetPPID (void);
+int syscall_wrapper_GetPPID(void);
 
-void syscall_wrapper_Sleep (unsigned);
+void syscall_wrapper_Sleep(unsigned);
 
-int syscall_wrapper_GetTime (void);
+int syscall_wrapper_GetTime(void);
 
-int systm_SemGet (int key);
+int systm_SemGet(int key);
 
-void syscall_wrapper_SemOp (int semid, int adjust);
+void syscall_wrapper_SemOp(int semid, int adjust);
 
-int syscall_wrapper_SemCtl (int semid, unsigned command, int *val);
+int syscall_wrapper_SemCtl(int semid, unsigned command, int *val);
 
-int syscall_wrapper_CondGet (int key);
+int syscall_wrapper_CondGet(int key);
 
-void syscall_wrapper_CondOp (int condid, unsigned op, int semid);
+void syscall_wrapper_CondOp(int condid, unsigned op, int semid);
 
-int syscall_wrapper_CondRemove (int condid);
+int syscall_wrapper_CondRemove(int condid);
 
-unsigned syscall_wrapper_ShmAllocate (unsigned size);
+unsigned syscall_wrapper_ShmAllocate(unsigned size);
 
-int syscall_wrapper_GetNumInstr (void);
+int syscall_wrapper_GetNumInstr(void);
+
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */

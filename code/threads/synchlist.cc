@@ -22,10 +22,9 @@
 //	Elements can now be added to the list.
 //----------------------------------------------------------------------
 
-SynchList::SynchList()
-{
+SynchList::SynchList() {
     list = new List();
-    lock = new Lock("list lock"); 
+    lock = new Lock("list lock");
     listEmpty = new Condition("list empty cond");
 }
 
@@ -34,9 +33,8 @@ SynchList::SynchList()
 //	De-allocate the data structures created for synchronizing a list. 
 //----------------------------------------------------------------------
 
-SynchList::~SynchList()
-{ 
-    delete list; 
+SynchList::~SynchList() {
+    delete list;
     delete lock;
     delete listEmpty;
 }
@@ -51,11 +49,10 @@ SynchList::~SynchList()
 //----------------------------------------------------------------------
 
 void
-SynchList::Append(void *item)
-{
-    lock->Acquire();		// enforce mutual exclusive access to the list 
+SynchList::Append(void *item) {
+    lock->Acquire();        // enforce mutual exclusive access to the list
     list->Append(item);
-    listEmpty->Signal(lock);	// wake up a waiter, if any
+    listEmpty->Signal(lock);    // wake up a waiter, if any
     lock->Release();
 }
 
@@ -68,13 +65,12 @@ SynchList::Append(void *item)
 //----------------------------------------------------------------------
 
 void *
-SynchList::Remove()
-{
+SynchList::Remove() {
     void *item;
 
-    lock->Acquire();			// enforce mutual exclusion
+    lock->Acquire();            // enforce mutual exclusion
     while (list->IsEmpty())
-	listEmpty->Wait(lock);		// wait until list isn't empty
+        listEmpty->Wait(lock);        // wait until list isn't empty
     item = list->Remove();
     ASSERT(item != NULL);
     lock->Release();
@@ -90,9 +86,8 @@ SynchList::Remove()
 //----------------------------------------------------------------------
 
 void
-SynchList::Mapcar(VoidFunctionPtr func)
-{ 
-    lock->Acquire(); 
+SynchList::Mapcar(VoidFunctionPtr func) {
+    lock->Acquire();
     list->Mapcar(func);
-    lock->Release(); 
+    lock->Release();
 }
