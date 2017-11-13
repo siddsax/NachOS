@@ -1,31 +1,7 @@
-// addrspace.cc
-//	Routines to manage address spaces (executing user programs).
-//
-//	In order to run a user program, you must:
-//
-//	1. link with the -N -T 0 option
-//	2. run coff2noff to convert the object file to Nachos format
-//		(Nachos object code format is essentially just a simpler
-//		version of the UNIX executable object code format)
-//	3. load the NOFF file into the Nachos file system
-//		(if you haven't implemented the file system yet, you
-//		don't need to do this last step)
-//
-// Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation
-// of liability and disclaimer of warranty provisions.
-
 #include "copyright.h"
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
-
-//----------------------------------------------------------------------
-// SwapHeader
-// 	Do little endian to big endian conversion on the bytes in the
-//	object file header, in case the file was generated on a little
-//	endian machine, and we're now running on a big endian machine.
-//----------------------------------------------------------------------
 
 static void
 SwapHeader(NoffHeader *noffH)
@@ -41,21 +17,6 @@ SwapHeader(NoffHeader *noffH)
     noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
     noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
-
-//----------------------------------------------------------------------
-// ProcessAddressSpace::ProcessAddressSpace
-// 	Create an address space to run a user program.
-//	Load the program from a file "executable", and set everything
-//	up so that we can start executing user instructions.
-//
-//	Assumes that the object code file is in NOFF format.
-//
-//	First, set up the translation from program memory to physical
-//	memory.  For now, this is really simple (1:1), since we are
-//	only uniprogramming, and we have a single unsegmented page table
-//	"executable" is the file containing the object code to load into memory
-//
-//----------------------------------------------------------------------
 
 ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 {
@@ -136,11 +97,6 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
     }
     /* ------------------------ CUSTOM ------------------------ */
 }
-
-//----------------------------------------------------------------------
-// ProcessAddressSpace::ProcessAddressSpace (ProcessAddressSpace*) is called by a forked thread.
-//      We need to duplicate the address space of the parent.
-//----------------------------------------------------------------------
 
 ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
 {
@@ -287,26 +243,10 @@ unsigned int ProcessAddressSpace::GetNextFreePage(int currentPage)
 }
 /* ------------------------ CUSTOM ------------------------ */
 
-//---------------------------------------------------------------------------------
-//----------------------------------------------------------------------
-// ProcessAddressSpace::~ProcessAddressSpace
-// 	Dealloate an address space.  Nothing for now!
-//----------------------------------------------------------------------
-
 ProcessAddressSpace::~ProcessAddressSpace()
 {
     delete KernelPageTable;
 }
-
-//----------------------------------------------------------------------
-// ProcessAddressSpace::InitUserModeCPURegisters
-// 	Set the initial values for the user-level register set.
-//
-// 	We write these directly into the "machine" registers, so
-//	that we can immediately jump to user code.  Note that these
-//	will be saved/restored into the currentThread->userRegisters
-//	when this thread is context switched out.
-//----------------------------------------------------------------------
 
 void ProcessAddressSpace::InitUserModeCPURegisters()
 {
@@ -315,39 +255,17 @@ void ProcessAddressSpace::InitUserModeCPURegisters()
     for (i = 0; i < NumTotalRegs; i++)
         machine->WriteRegister(i, 0);
 
-    // Initial program counter -- must be location of "Start"
     machine->WriteRegister(PCReg, 0);
 
-    // Need to also tell MIPS where next instruction is, because
-    // of branch delay possibility
     machine->WriteRegister(NextPCReg, 4);
 
-    // Set the stack register to the end of the address space, where we
-    // allocated the stack; but subtract off a bit, to make sure we don't
-    // accidentally reference off the end!
     machine->WriteRegister(StackReg, numVirtualPages * PageSize - 16);
     DEBUG('a', "Initializing stack register to %d\n", numVirtualPages * PageSize - 16);
 }
 
-//----------------------------------------------------------------------
-// ProcessAddressSpace::SaveContextOnSwitch
-// 	On a context switch, save any machine state, specific
-//	to this address space, that needs saving.
-//
-//	For now, nothing!
-//----------------------------------------------------------------------
-
 void ProcessAddressSpace::SaveContextOnSwitch()
 {
 }
-
-//----------------------------------------------------------------------
-// ProcessAddressSpace::RestoreContextOnSwitch
-// 	On a context switch, restore the machine state so that
-//	this address space can run.
-//
-//      For now, tell the machine where to find the page table.
-//----------------------------------------------------------------------
 
 void ProcessAddressSpace::RestoreContextOnSwitch()
 {

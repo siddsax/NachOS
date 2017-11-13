@@ -1,40 +1,29 @@
-// system.cc
-//	Nachos initialization and cleanup routines.
-//
-// Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation
-// of liability and disclaimer of warranty provisions.
-
 #include "copyright.h"
 #include "system.h"
 
-// This defines *all* of the global data structures used by Nachos.
-// These are all initialized and de-allocated by this file.
+NachOSThread *currentThread;
+NachOSThread *threadToBeDestroyed;
+ProcessScheduler *scheduler;
+Interrupt *interrupt;
+Statistics *stats;
+Timer *timer;
 
-NachOSThread *currentThread;       // the thread we are running now
-NachOSThread *threadToBeDestroyed; // the thread that just finished
-ProcessScheduler *scheduler;       // the ready list
-Interrupt *interrupt;              // interrupt status
-Statistics *stats;                 // performance metrics
-Timer *timer;                      // the hardware timer device,
-// for invoking context switches
+unsigned numPagesAllocated;
 
-unsigned numPagesAllocated; // number of physical frames allocated
-
-NachOSThread *threadArray[MAX_THREAD_COUNT]; // Array of thread pointers
-unsigned thread_index;                       // Index into this array (also used to assign unique pid)
+NachOSThread *threadArray[MAX_THREAD_COUNT];
+unsigned thread_index;
 bool initializedConsoleSemaphores;
-bool exitThreadArray[MAX_THREAD_COUNT]; //Marks exited threads
+bool exitThreadArray[MAX_THREAD_COUNT];
 
-TimeSortedWaitQueue *sleepQueueHead; // Needed to implement syscall_wrapper_Sleep
+TimeSortedWaitQueue *sleepQueueHead;
 
-int schedulingAlgo;    // Scheduling algorithm to simulate
-char **batchProcesses; // Names of batch processes
-int *priority;         // Process priority
+int schedulingAlgo;
+char **batchProcesses;
+int *priority;
 
-int cpu_burst_start_time;                  // Records the start of current CPU burst
-int completionTimeArray[MAX_THREAD_COUNT]; // Records the completion time of all simulated threads
-bool excludeMainThread;                    // Used by completion time statistics calculation
+int cpu_burst_start_time;
+int completionTimeArray[MAX_THREAD_COUNT];
+bool excludeMainThread;
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -44,45 +33,27 @@ FileSystem *fileSystem;
 SynchDisk *synchDisk;
 #endif
 
-#ifdef USER_PROGRAM // requires either FILESYS or FILESYS_STUB
-Machine *machine;   // user program memory and registers
+#ifdef USER_PROGRAM
+Machine *machine;
 #endif
 
 #ifdef NETWORK
 PostOffice *postOffice;
 #endif
 
-// External definition, to allow us to take a pointer to this function
 extern void Cleanup();
 
 /* ------------------------ CUSTOM ------------------------ */
 int pageReplaceAlgo;
 /* ------------------------ CUSTOM ------------------------ */
 
-//----------------------------------------------------------------------
-// TimerInterruptHandler
-// 	Interrupt handler for the timer device.  The timer device is
-//	set up to interrupt the CPU periodically (once every TimerTicks).
-//	This routine is called each time there is a timer interrupt,
-//	with interrupts disabled.
-//
-//	Note that instead of calling YieldCPU() directly (which would
-//	suspend the interrupt handler, not the interrupted thread
-//	which is what we wanted to context switch), we set a flag
-//	so that once the interrupt handler is done, it will appear as
-//	if the interrupted thread called YieldCPU at the point it is
-//	was interrupted.
-//
-//	"dummy" is because every interrupt handler takes one argument,
-//		whether it needs it or not.
-//----------------------------------------------------------------------
 static void
 TimerInterruptHandler(int dummy)
 {
     TimeSortedWaitQueue *ptr;
     if (interrupt->getStatus() != IdleMode)
     {
-        // Check the head of the sleep queue
+
         while ((sleepQueueHead != NULL) && (sleepQueueHead->GetWhen() <= (unsigned)stats->totalTicks))
         {
             sleepQueueHead->GetThread()->Schedule();
@@ -90,7 +61,7 @@ TimerInterruptHandler(int dummy)
             sleepQueueHead = sleepQueueHead->GetNext();
             delete ptr;
         }
-        //printf("[%d] Timer interrupt.\n", stats->totalTicks);
+
         if ((schedulingAlgo == ROUND_ROBIN) || (schedulingAlgo == UNIX_SCHED))
         {
             if ((stats->totalTicks - cpu_burst_start_time) >= SCHED_QUANTUM)
@@ -102,16 +73,6 @@ TimerInterruptHandler(int dummy)
     }
 }
 
-//----------------------------------------------------------------------
-// Initialize
-// 	Initialize Nachos global data structures.  Interpret command
-//	line arguments in order to determine flags for the initialization.
-//
-//	"argc" is the number of command line arguments (including the name
-//		of the command) -- ex: "nachos -d +" -> argc = 3
-//	"argv" is an array of strings, one for each command line argument
-//		ex: "nachos -d +" -> argv = {"nachos", "-d", "+"}
-//----------------------------------------------------------------------
 void Initialize(int argc, char **argv)
 {
     int argCount, i;
@@ -121,7 +82,7 @@ void Initialize(int argc, char **argv)
     initializedConsoleSemaphores = false;
     numPagesAllocated = 0;
 
-    schedulingAlgo = NON_PREEMPTIVE_BASE; // Default
+    schedulingAlgo = NON_PREEMPTIVE_BASE;
 
     /* ------------------------ CUSTOM ------------------------ */
     pageReplaceAlgo = 1;
@@ -151,14 +112,14 @@ void Initialize(int argc, char **argv)
     sleepQueueHead = NULL;
 
 #ifdef USER_PROGRAM
-    bool debugUserProg = FALSE; // single step user program
+    bool debugUserProg = FALSE;
 #endif
 #ifdef FILESYS_NEEDED
-    bool format = FALSE; // format disk
+    bool format = FALSE;
 #endif
 #ifdef NETWORK
-    double rely = 1; // network reliability
-    int netname = 0; // UNIX socket name
+    double rely = 1;
+    int netname = 0;
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount)
@@ -167,7 +128,7 @@ void Initialize(int argc, char **argv)
         if (!strcmp(*argv, "-d"))
         {
             if (argc == 1)
-                debugArgs = "+"; // turn on all debug flags
+                debugArgs = "+";
             else
             {
                 debugArgs = *(argv + 1);
@@ -177,8 +138,8 @@ void Initialize(int argc, char **argv)
         else if (!strcmp(*argv, "-rs"))
         {
             ASSERT(argc > 1);
-            RandomInit(atoi(*(argv + 1))); // initialize pseudo-random
-            // number generator
+            RandomInit(atoi(*(argv + 1)));
+
             randomYield = TRUE;
             argCount = 2;
         }
@@ -206,18 +167,15 @@ void Initialize(int argc, char **argv)
 #endif
     }
 
-    DebugInit(debugArgs);               // initialize DEBUG messages
-    stats = new Statistics();           // collect statistics
-    interrupt = new Interrupt;          // start up interrupt handling
-    scheduler = new ProcessScheduler(); // initialize the ready queue
-    //if (randomYield)				// start the timer (if needed)
+    DebugInit(debugArgs);
+    stats = new Statistics();
+    interrupt = new Interrupt;
+    scheduler = new ProcessScheduler();
+
     timer = new Timer(TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = NULL;
 
-    // We didn't explicitly allocate the current thread we are running in.
-    // But if it ever tries to give up the CPU, we better have a NachOSThread
-    // object to save its state.
     currentThread = NULL;
     currentThread = new NachOSThread("main", MIN_NICE_PRIORITY);
     currentThread->setStatus(RUNNING);
@@ -225,10 +183,10 @@ void Initialize(int argc, char **argv)
     cpu_burst_start_time = stats->totalTicks;
 
     interrupt->Enable();
-    CallOnUserAbort(Cleanup); // if user hits ctl-C
+    CallOnUserAbort(Cleanup);
 
 #ifdef USER_PROGRAM
-    machine = new Machine(debugUserProg); // this must come first
+    machine = new Machine(debugUserProg);
 #endif
 
 #ifdef FILESYS
@@ -244,10 +202,6 @@ void Initialize(int argc, char **argv)
 #endif
 }
 
-//----------------------------------------------------------------------
-// Cleanup
-// 	Nachos is halting.  De-allocate global data structures.
-//----------------------------------------------------------------------
 void Cleanup()
 {
     printf("\nCleaning up...\n");

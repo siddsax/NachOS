@@ -1,20 +1,6 @@
-// stats.h
-//	Routines for managing statistics about Nachos performance.
-//
-// DO NOT CHANGE -- these stats are maintained by the machine emulation.
-//
-// Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation
-// of liability and disclaimer of warranty provisions.
-
 #include "copyright.h"
 #include "utility.h"
 #include "stats.h"
-
-//----------------------------------------------------------------------
-// Statistics::Statistics
-// 	Initialize performance metrics to zero, at system startup.
-//----------------------------------------------------------------------
 
 Statistics::Statistics()
 {
@@ -35,12 +21,6 @@ Statistics::Statistics()
 
     burstEstimateError = 0;
 }
-
-//----------------------------------------------------------------------
-// Statistics::Print
-// 	Print performance metrics, when we've finished everything
-//	at system shutdown.
-//----------------------------------------------------------------------
 
 void Statistics::Print()
 {
