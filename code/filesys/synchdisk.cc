@@ -24,8 +24,9 @@
 //----------------------------------------------------------------------
 
 static void
-DiskRequestDone(int arg) {
-    SynchDisk *disk = (SynchDisk *) arg;
+DiskRequestDone (int arg)
+{
+    SynchDisk* disk = (SynchDisk *)arg;
 
     disk->RequestDone();
 }
@@ -39,7 +40,8 @@ DiskRequestDone(int arg) {
 //	   (usually, "DISK")
 //----------------------------------------------------------------------
 
-SynchDisk::SynchDisk(char *name) {
+SynchDisk::SynchDisk(char* name)
+{
     semaphore = new Semaphore("synch disk", 0);
     lock = new Lock("synch disk lock");
     disk = new Disk(name, DiskRequestDone, (int) this);
@@ -51,7 +53,8 @@ SynchDisk::SynchDisk(char *name) {
 //	abstraction.
 //----------------------------------------------------------------------
 
-SynchDisk::~SynchDisk() {
+SynchDisk::~SynchDisk()
+{
     delete disk;
     delete lock;
     delete semaphore;
@@ -67,10 +70,11 @@ SynchDisk::~SynchDisk() {
 //----------------------------------------------------------------------
 
 void
-SynchDisk::ReadSector(int sectorNumber, char *data) {
-    lock->Acquire();            // only one disk I/O at a time
+SynchDisk::ReadSector(int sectorNumber, char* data)
+{
+    lock->Acquire();			// only one disk I/O at a time
     disk->ReadRequest(sectorNumber, data);
-    semaphore->P();            // wait for interrupt
+    semaphore->P();			// wait for interrupt
     lock->Release();
 }
 
@@ -84,10 +88,11 @@ SynchDisk::ReadSector(int sectorNumber, char *data) {
 //----------------------------------------------------------------------
 
 void
-SynchDisk::WriteSector(int sectorNumber, char *data) {
-    lock->Acquire();            // only one disk I/O at a time
+SynchDisk::WriteSector(int sectorNumber, char* data)
+{
+    lock->Acquire();			// only one disk I/O at a time
     disk->WriteRequest(sectorNumber, data);
-    semaphore->P();            // wait for interrupt
+    semaphore->P();			// wait for interrupt
     lock->Release();
 }
 
@@ -98,6 +103,7 @@ SynchDisk::WriteSector(int sectorNumber, char *data) {
 //----------------------------------------------------------------------
 
 void
-SynchDisk::RequestDone() {
+SynchDisk::RequestDone()
+{ 
     semaphore->V();
 }

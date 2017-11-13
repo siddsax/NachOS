@@ -1,7 +1,8 @@
 #include "syscall.h"
 
 int
-main() {
+main()
+{
     SpaceId newProc;
     OpenFileId input = ConsoleInput;
     OpenFileId output = ConsoleOutput;
@@ -11,26 +12,24 @@ main() {
     prompt[0] = '-';
     prompt[1] = '-';
 
-    while (1)
+    while( 1 )
     {
-        syscall_wrapper_Write(prompt, 2, output);
+	syscall_wrapper_Write(prompt, 2, output);
 
-        i = 0;
+	i = 0;
+	
+	do {
+	
+	    syscall_wrapper_Read(&buffer[i], 1, input); 
 
-        do
-        {
+	} while( buffer[i++] != '\n' );
 
-            syscall_wrapper_Read(&buffer[i], 1, input);
+	buffer[--i] = '\0';
 
-        }
-        while (buffer[i++] != '\n');
-
-        buffer[--i] = '\0';
-
-        /*if( i > 0 ) {
-            newProc = syscall_wrapper_Exec(buffer);
-            syscall_wrapper_Join(newProc);
-        }*/
+	/*if( i > 0 ) {
+		newProc = syscall_wrapper_Exec(buffer);
+		syscall_wrapper_Join(newProc);
+	}*/
     }
 }
 

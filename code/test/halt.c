@@ -13,7 +13,8 @@
 #include "syscall.h"
 
 int
-main() {
+main()
+{
     syscall_wrapper_Halt();
     /* not reached */
 }

@@ -1,11 +1,11 @@
-// progtest.cc
+// progtest.cc 
 //	Test routines for demonstrating that Nachos can load
-//	a user program and execute it.
+//	a user program and execute it.  
 //
 //	Also, routines for testing the Console hardware device.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation
+// All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -15,10 +15,11 @@
 #include "synch.h"
 #include "filesys.h"
 
-void BatchStartFunction(int dummy)
+void
+BatchStartFunction (int dummy)
 {
-    currentThread->Startup();
-    machine->Run();
+   currentThread->Startup();
+   machine->Run();
 }
 
 //----------------------------------------------------------------------
@@ -27,31 +28,28 @@ void BatchStartFunction(int dummy)
 //	memory, and jump to it.
 //----------------------------------------------------------------------
 
-void LaunchUserProcess(char *filename)
+void
+LaunchUserProcess(char *filename)
 {
     OpenFile *executable = fileSystem->Open(filename);
     ProcessAddressSpace *space;
 
-    if (executable == NULL)
-    {
-        printf("Unable to open file %s\n", filename);
-        return;
+    if (executable == NULL) {
+	printf("Unable to open file %s\n", filename);
+	return;
     }
-
-    space = new ProcessAddressSpace(executable);
+    space = new ProcessAddressSpace(executable);    
     currentThread->space = space;
 
-    currentThread->space->fileName = filename;
+    delete executable;			// close file
 
-    delete executable; // close file
+    space->InitUserModeCPURegisters();		// set the initial register values
+    space->RestoreContextOnSwitch();		// load page table register
 
-    space->InitUserModeCPURegisters(); // set the initial register values
-    space->RestoreContextOnSwitch();   // load page table register
-    //printf("\nzzzzzzzz3\n");
-    machine->Run(); // jump to the user progam
-    ASSERT(FALSE);  // machine->Run never returns;
-    // the address space exits
-    // by doing the syscall "exit"
+    machine->Run();			// jump to the user progam
+    ASSERT(FALSE);			// machine->Run never returns;
+					// the address space exits
+					// by doing the syscall "exit"
 }
 
 // Data structures needed for the console test.  Threads making
@@ -67,7 +65,6 @@ static Semaphore *writeDone;
 //----------------------------------------------------------------------
 
 static void ReadAvail(int arg) { readAvail->V(); }
-
 static void WriteDone(int arg) { writeDone->V(); }
 
 //----------------------------------------------------------------------
@@ -76,22 +73,21 @@ static void WriteDone(int arg) { writeDone->V(); }
 //	the output.  Stop when the user types a 'q'.
 //----------------------------------------------------------------------
 
-void ConsoleTest(char *in, char *out)
+void 
+ConsoleTest (char *in, char *out)
 {
     char ch;
 
     console = new Console(in, out, ReadAvail, WriteDone, 0);
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
-
-    for (;;)
-    {
-        readAvail->P(); // wait for character to arrive
-        ch = console->GetChar();
-        console->PutChar(ch); // echo it!
-        writeDone->P();       // wait for write to finish
-        if (ch == 'q')
-            return; // if q, quit
+    
+    for (;;) {
+	readAvail->P();		// wait for character to arrive
+	ch = console->GetChar();
+	console->PutChar(ch);	// echo it!
+	writeDone->P() ;        // wait for write to finish
+	if (ch == 'q') return;  // if q, quit
     }
 }
 
@@ -102,97 +98,86 @@ void ConsoleTest(char *in, char *out)
 //      memory, and invoke the scheduler.
 //---------------------------------------------------------------------------------------------------
 
-void ReadInputAndFork(char *filename)
+void
+ReadInputAndFork (char *filename)
 {
-    OpenFile *inFile = fileSystem->Open(filename);
-    char c, buffer[16];
-    unsigned batchSize = 0, bytesRead, charPointer, i;
+   OpenFile *inFile = fileSystem->Open(filename);
+   char c, buffer[16];
+   unsigned batchSize=0, bytesRead, charPointer, i;
+ 
+   excludeMainThread = TRUE;
+  
+   if (inFile == NULL) {
+      printf("Unable to open file %s\n", filename);
+      return;
+   }
 
-    excludeMainThread = TRUE;
+   inFile->Read(&c, 1);
+   schedulingAlgo = 0;
+   // Read scheduling algorithm
+   while (c != '\n') {
+      schedulingAlgo = 10*schedulingAlgo + c - '0';
+      inFile->Read(&c, 1);
+   }
 
-    if (inFile == NULL)
-    {
-        printf("Unable to open file %s\n", filename);
-        return;
-    }
+   //printf("%d\n", schedulingAlgo);
 
-    inFile->Read(&c, 1);
-    schedulingAlgo = 0;
-    // Read scheduling algorithm
-    while (c != '\n')
-    {
-        schedulingAlgo = 10 * schedulingAlgo + c - '0';
-        inFile->Read(&c, 1);
-    }
+   if ((schedulingAlgo == ROUND_ROBIN) || (schedulingAlgo == UNIX_SCHED)) {
+      ASSERT (SCHED_QUANTUM > 0);
+   }
 
-    //printf("%d\n", schedulingAlgo);
-
-    if ((schedulingAlgo == ROUND_ROBIN) || (schedulingAlgo == UNIX_SCHED))
-    {
-        ASSERT(SCHED_QUANTUM > 0);
-    }
-
-    bytesRead = inFile->Read(&c, 1);
-    while (bytesRead != 0)
-    {
-        charPointer = 0;
-        while ((c != ' ') && (c != '\n'))
-        {
-            batchProcesses[batchSize][charPointer] = c;
-            charPointer++;
+   bytesRead = inFile->Read(&c, 1);
+   while (bytesRead != 0) {
+      charPointer = 0;
+      while ((c != ' ') && (c != '\n')) {
+         batchProcesses[batchSize][charPointer] = c;
+         charPointer++;
+         bytesRead = inFile->Read(&c, 1);
+      }
+      batchProcesses[batchSize][charPointer] = '\0';
+      if (c == '\n') {
+         priority[batchSize] = MAX_NICE_PRIORITY;
+      }
+      else {
+         bytesRead = inFile->Read(&c, 1);
+         priority[batchSize] = 0;
+         while (c != '\n') {
+            priority[batchSize] = 10*priority[batchSize] + c - '0';
             bytesRead = inFile->Read(&c, 1);
-        }
-        batchProcesses[batchSize][charPointer] = '\0';
-        if (c == '\n')
-        {
-            priority[batchSize] = MAX_NICE_PRIORITY;
-        }
-        else
-        {
-            bytesRead = inFile->Read(&c, 1);
-            priority[batchSize] = 0;
-            while (c != '\n')
-            {
-                priority[batchSize] = 10 * priority[batchSize] + c - '0';
-                bytesRead = inFile->Read(&c, 1);
-            }
-        }
-        //printf("%s %d\n", batchProcesses[batchSize], priority[batchSize]);
-        batchSize++;
-        bytesRead = inFile->Read(&c, 1);
-    }
-    delete inFile;
+         }
+      }
+      //printf("%s %d\n", batchProcesses[batchSize], priority[batchSize]);
+      batchSize++;
+      bytesRead = inFile->Read(&c, 1);
+   }
+   delete inFile;
 
-    for (i = 0; i < batchSize; i++)
-    {
-        // Create one child per iteration
-        inFile = fileSystem->Open(batchProcesses[i]);
-        if (inFile == NULL)
-        {
-            printf("Unable to open file %s\n", batchProcesses[i]);
-            return;
-        }
-        sprintf(buffer, "Thread_%d", i + 1);
-        NachOSThread *child = new NachOSThread(buffer, priority[i]);
-        child->space = new ProcessAddressSpace(inFile);
-        delete inFile;
-        child->space->InitUserModeCPURegisters(); // set the initial register values
-        child->SaveUserState();
-        child->CreateThreadStack(BatchStartFunction, 0);
-        child->Schedule();
-        //printf("Created %d\n", i);
-    }
+   for (i=0; i<batchSize; i++) {
+      // Create one child per iteration
+      inFile = fileSystem->Open(batchProcesses[i]);
+      if (inFile == NULL) {
+         printf("Unable to open file %s\n", batchProcesses[i]);
+         return;
+      }
+      sprintf(buffer,"Thread_%d",i+1);
+      NachOSThread *child = new NachOSThread(buffer, priority[i]);
+      child->space = new ProcessAddressSpace (inFile);
+      delete inFile;
+      child->space->InitUserModeCPURegisters();             // set the initial register values
+      child->SaveUserState ();
+      child->CreateThreadStack (BatchStartFunction, 0);
+      child->Schedule ();
+      //printf("Created %d\n", i);
+   }
 
-    // Cleanly exit current thread
-    // Assume exit code zero
-    printf("[pid %d]: Exit called. Code: %d\n", currentThread->GetPID(), 0);
-    exitThreadArray[currentThread->GetPID()] = true;
+   // Cleanly exit current thread
+   // Assume exit code zero
+   printf("[pid %d]: Exit called. Code: %d\n", currentThread->GetPID(), 0);
+   exitThreadArray[currentThread->GetPID()] = true;
 
-    // Find out if all threads have called exit
-    for (i = 0; i < thread_index; i++)
-    {
-        if (!exitThreadArray[i])
-            break;
-    }
-    currentThread->Exit(i == thread_index, 0);
+   // Find out if all threads have called exit
+   for (i=0; i<thread_index; i++) {
+       if (!exitThreadArray[i]) break;
+   }
+   currentThread->Exit(i==thread_index, 0);
 }

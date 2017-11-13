@@ -20,13 +20,13 @@
 // We put this at the front of the UNIX file representing the
 // disk, to make it less likely we will accidentally treat a useful file 
 // as a disk (which would probably trash the file's contents).
-#define MagicNumber    0x456789ab
-#define MagicSize    sizeof(int)
+#define MagicNumber 	0x456789ab
+#define MagicSize 	sizeof(int)
 
-#define DiskSize    (MagicSize + (NumSectors * SectorSize))
+#define DiskSize 	(MagicSize + (NumSectors * SectorSize))
 
 // dummy procedure because we can't take a pointer of a member function
-static void DiskDone(int arg) { ((Disk *) arg)->HandleInterrupt(); }
+static void DiskDone(int arg) { ((Disk *)arg)->HandleInterrupt(); }
 
 //----------------------------------------------------------------------
 // Disk::Disk()
@@ -40,7 +40,8 @@ static void DiskDone(int arg) { ((Disk *) arg)->HandleInterrupt(); }
 //	"callArg" -- argument to pass the interrupt handler
 //----------------------------------------------------------------------
 
-Disk::Disk(char *name, VoidFunctionPtr callWhenDone, int callArg) {
+Disk::Disk(char* name, VoidFunctionPtr callWhenDone, int callArg)
+{
     int magicNum;
     int tmp = 0;
 
@@ -49,22 +50,19 @@ Disk::Disk(char *name, VoidFunctionPtr callWhenDone, int callArg) {
     handlerArg = callArg;
     lastSector = 0;
     bufferInit = 0;
-
+    
     fileno = OpenForReadWrite(name, FALSE);
-    if (fileno >= 0)
-    {            // file exists, check magic number
-        Read(fileno, (char *) &magicNum, MagicSize);
-        ASSERT(magicNum == MagicNumber);
-    }
-    else
-    {                // file doesn't exist, create it
+    if (fileno >= 0) {		 	// file exists, check magic number 
+	Read(fileno, (char *) &magicNum, MagicSize);
+	ASSERT(magicNum == MagicNumber);
+    } else {				// file doesn't exist, create it
         fileno = OpenForWrite(name);
-        magicNum = MagicNumber;
-        WriteFile(fileno, (char *) &magicNum, MagicSize); // write magic number
+	magicNum = MagicNumber;  
+	WriteFile(fileno, (char *) &magicNum, MagicSize); // write magic number
 
-        // need to write at end of file, so that reads will not return EOF
-        Lseek(fileno, DiskSize - sizeof(int), 0);
-        WriteFile(fileno, (char *) &tmp, sizeof(int));
+	// need to write at end of file, so that reads will not return EOF
+        Lseek(fileno, DiskSize - sizeof(int), 0);	
+	WriteFile(fileno, (char *)&tmp, sizeof(int));  
     }
     active = FALSE;
 }
@@ -75,7 +73,8 @@ Disk::Disk(char *name, VoidFunctionPtr callWhenDone, int callArg) {
 //	disk.
 //----------------------------------------------------------------------
 
-Disk::~Disk() {
+Disk::~Disk()
+{
     Close(fileno);
 }
 
@@ -85,16 +84,17 @@ Disk::~Disk() {
 //----------------------------------------------------------------------
 
 static void
-PrintSector(bool writing, int sector, char *data) {
+PrintSector (bool writing, int sector, char *data)
+{
     int *p = (int *) data;
 
     if (writing)
-        printf("Writing sector: %d\n", sector);
+        printf("Writing sector: %d\n", sector); 
     else
-        printf("Reading sector: %d\n", sector);
-    for (unsigned int i = 0; i < (SectorSize / sizeof(int)); i++)
-        printf("%x ", p[i]);
-    printf("\n");
+        printf("Reading sector: %d\n", sector); 
+    for (unsigned int i = 0; i < (SectorSize/sizeof(int)); i++)
+	printf("%x ", p[i]);
+    printf("\n"); 
 }
 
 //----------------------------------------------------------------------
@@ -113,18 +113,19 @@ PrintSector(bool writing, int sector, char *data) {
 //----------------------------------------------------------------------
 
 void
-Disk::ReadRequest(int sectorNumber, char *data) {
+Disk::ReadRequest(int sectorNumber, char* data)
+{
     int ticks = ComputeLatency(sectorNumber, FALSE);
 
-    ASSERT(!active);                // only one request at a time
+    ASSERT(!active);				// only one request at a time
     ASSERT((sectorNumber >= 0) && (sectorNumber < NumSectors));
-
+    
     DEBUG('d', "Reading from sector %d\n", sectorNumber);
     Lseek(fileno, SectorSize * sectorNumber + MagicSize, 0);
     Read(fileno, data, SectorSize);
     if (DebugIsEnabled('d'))
-        PrintSector(FALSE, sectorNumber, data);
-
+	PrintSector(FALSE, sectorNumber, data);
+    
     active = TRUE;
     UpdateLast(sectorNumber);
     stats->numDiskReads++;
@@ -132,18 +133,19 @@ Disk::ReadRequest(int sectorNumber, char *data) {
 }
 
 void
-Disk::WriteRequest(int sectorNumber, char *data) {
+Disk::WriteRequest(int sectorNumber, char* data)
+{
     int ticks = ComputeLatency(sectorNumber, TRUE);
 
     ASSERT(!active);
     ASSERT((sectorNumber >= 0) && (sectorNumber < NumSectors));
-
+    
     DEBUG('d', "Writing to sector %d\n", sectorNumber);
     Lseek(fileno, SectorSize * sectorNumber + MagicSize, 0);
     WriteFile(fileno, data, SectorSize);
     if (DebugIsEnabled('d'))
-        PrintSector(TRUE, sectorNumber, data);
-
+	PrintSector(TRUE, sectorNumber, data);
+    
     active = TRUE;
     UpdateLast(sectorNumber);
     stats->numDiskWrites++;
@@ -157,7 +159,8 @@ Disk::WriteRequest(int sectorNumber, char *data) {
 //----------------------------------------------------------------------
 
 void
-Disk::HandleInterrupt() {
+Disk::HandleInterrupt ()
+{ 
     active = FALSE;
     (*handler)(handlerArg);
 }
@@ -174,18 +177,19 @@ Disk::HandleInterrupt() {
 //----------------------------------------------------------------------
 
 int
-Disk::TimeToSeek(int newSector, int *rotation) {
+Disk::TimeToSeek(int newSector, int *rotation) 
+{
     int newTrack = newSector / SectorsPerTrack;
     int oldTrack = lastSector / SectorsPerTrack;
     int seek = abs(newTrack - oldTrack) * SeekTime;
-    // how long will seek take?
-    int over = (stats->totalTicks + seek) % RotationTime;
-    // will we be in the middle of a sector when
-    // we finish the seek?
+				// how long will seek take?
+    int over = (stats->totalTicks + seek) % RotationTime; 
+				// will we be in the middle of a sector when
+				// we finish the seek?
 
     *rotation = 0;
-    if (over > 0)        // if so, need to round up to next full sector
-        *rotation = RotationTime - over;
+    if (over > 0)	 	// if so, need to round up to next full sector
+   	*rotation = RotationTime - over;
     return seek;
 }
 
@@ -195,8 +199,9 @@ Disk::TimeToSeek(int newSector, int *rotation) {
 //	"to" and current sector position "from"
 //----------------------------------------------------------------------
 
-int
-Disk::ModuloDiff(int to, int from) {
+int 
+Disk::ModuloDiff(int to, int from)
+{
     int toOffset = to % SectorsPerTrack;
     int fromOffset = from % SectorsPerTrack;
 
@@ -225,26 +230,26 @@ Disk::ModuloDiff(int to, int from) {
 //----------------------------------------------------------------------
 
 int
-Disk::ComputeLatency(int newSector, bool writing) {
+Disk::ComputeLatency(int newSector, bool writing)
+{
     int rotation;
     int seek = TimeToSeek(newSector, &rotation);
     int timeAfter = stats->totalTicks + seek + rotation;
 
-#ifndef NOTRACKBUF    // turn this on if you don't want the track buffer stuff
+#ifndef NOTRACKBUF	// turn this on if you don't want the track buffer stuff
     // check if track buffer applies
-    if ((writing == FALSE) && (seek == 0)
-        && (((timeAfter - bufferInit) / RotationTime)
-            > ModuloDiff(newSector, bufferInit / RotationTime)))
-    {
+    if ((writing == FALSE) && (seek == 0) 
+		&& (((timeAfter - bufferInit) / RotationTime) 
+	     		> ModuloDiff(newSector, bufferInit / RotationTime))) {
         DEBUG('d', "Request latency = %d\n", RotationTime);
-        return RotationTime; // time to transfer sector from the track buffer
+	return RotationTime; // time to transfer sector from the track buffer
     }
 #endif
 
     rotation += ModuloDiff(newSector, timeAfter / RotationTime) * RotationTime;
 
     DEBUG('d', "Request latency = %d\n", seek + rotation + RotationTime);
-    return (seek + rotation + RotationTime);
+    return(seek + rotation + RotationTime);
 }
 
 //----------------------------------------------------------------------
@@ -254,12 +259,13 @@ Disk::ComputeLatency(int newSector, bool writing) {
 //----------------------------------------------------------------------
 
 void
-Disk::UpdateLast(int newSector) {
+Disk::UpdateLast(int newSector)
+{
     int rotate;
     int seek = TimeToSeek(newSector, &rotate);
-
+    
     if (seek != 0)
-        bufferInit = stats->totalTicks + seek + rotate;
+	bufferInit = stats->totalTicks + seek + rotate;
     lastSector = newSector;
     DEBUG('d', "Updating last sector = %d, %d\n", lastSector, bufferInit);
 }

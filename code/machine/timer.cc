@@ -24,10 +24,8 @@
 #include "system.h"
 
 // dummy function because C++ does not allow pointers to member functions
-static void TimerHandler(int arg) {
-    Timer *p = (Timer *) arg;
-    p->TimerExpired();
-}
+static void TimerHandler(int arg)
+{ Timer *p = (Timer *)arg; p->TimerExpired(); }
 
 //----------------------------------------------------------------------
 // Timer::Timer
@@ -43,14 +41,15 @@ static void TimerHandler(int arg) {
 //		at random, instead of fixed, intervals.
 //----------------------------------------------------------------------
 
-Timer::Timer(VoidFunctionPtr timerHandler, int callArg, bool doRandom) {
+Timer::Timer(VoidFunctionPtr timerHandler, int callArg, bool doRandom)
+{
     randomize = doRandom;
     handler = timerHandler;
-    arg = callArg;
+    arg = callArg; 
 
     // schedule the first interrupt from the timer device
-    interrupt->Schedule(TimerHandler, (int) this, TimeOfNextInterrupt(),
-                        TimerInt);
+    interrupt->Schedule(TimerHandler, (int) this, TimeOfNextInterrupt(), 
+		TimerInt); 
 }
 
 //----------------------------------------------------------------------
@@ -59,11 +58,12 @@ Timer::Timer(VoidFunctionPtr timerHandler, int callArg, bool doRandom) {
 //	timer device.  Schedule the next interrupt, and invoke the
 //	interrupt handler.
 //----------------------------------------------------------------------
-void
-Timer::TimerExpired() {
+void 
+Timer::TimerExpired() 
+{
     // schedule the next timer device interrupt
-    interrupt->Schedule(TimerHandler, (int) this, TimeOfNextInterrupt(),
-                        TimerInt);
+    interrupt->Schedule(TimerHandler, (int) this, TimeOfNextInterrupt(), 
+		TimerInt);
 
     // invoke the Nachos interrupt handler for this device
     (*handler)(arg);
@@ -75,10 +75,11 @@ Timer::TimerExpired() {
 //	If randomize is turned on, make it a (pseudo-)random delay.
 //----------------------------------------------------------------------
 
-int
-Timer::TimeOfNextInterrupt() {
+int 
+Timer::TimeOfNextInterrupt() 
+{
     if (randomize)
-        return 1 + (Random() % (TimerTicks * 2));
+	return 1 + (Random() % (TimerTicks * 2));
     else
-        return TimerTicks;
+	return TimerTicks; 
 }

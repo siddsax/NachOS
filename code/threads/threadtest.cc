@@ -22,12 +22,12 @@
 //----------------------------------------------------------------------
 
 void
-SimpleThread(int which) {
+SimpleThread(int which)
+{
     int num;
-
-    for (num = 0; num < 5; num++)
-    {
-        printf("*** thread %d looped %d times\n", which, num);
+    
+    for (num = 0; num < 5; num++) {
+	printf("*** thread %d looped %d times\n", which, num);
         currentThread->YieldCPU();
     }
 }
@@ -39,7 +39,8 @@ SimpleThread(int which) {
 //----------------------------------------------------------------------
 
 void
-ThreadTest() {
+ThreadTest()
+{
     DEBUG('t', "Entering SimpleTest");
 
     NachOSThread *t = new NachOSThread("forked thread", GET_NICE_FROM_PARENT);

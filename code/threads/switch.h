@@ -21,7 +21,7 @@
 
 #ifdef HOST_MIPS
 
-/* Registers that must be saved during a context switch.
+/* Registers that must be saved during a context switch. 
  * These are the offsets from the beginning of the NachOSThread object, 
  * in bytes, used in switch.s
  */
@@ -59,11 +59,11 @@
 #define WhenDonePCState	(S2/4-1)
 #define StartupPCState	(S3/4-1)
 
-#endif    // HOST_MIPS
+#endif 	// HOST_MIPS
 
 #ifdef HOST_SPARC
 
-/* Registers that must be saved during a context switch.  See comment above. */
+/* Registers that must be saved during a context switch.  See comment above. */ 
 #define I0 4
 #define I1 8
 #define I2 12
@@ -88,11 +88,11 @@
 #define InitialArgState (I1/4-1)
 #define WhenDonePCState (I2/4-1)
 #define StartupPCState  (I3/4-1)
-#endif    // HOST_SPARC
+#endif 	// HOST_SPARC
 
 #ifdef HOST_SNAKE
 
-/* Registers that must be saved during a context switch.  See comment above. */
+/* Registers that must be saved during a context switch.  See comment above. */ 
 #define   SP   0
 #define   S0   4
 #define   S1   8
@@ -123,7 +123,7 @@
 #define InitialArgState (S1/4-1)
 #define WhenDonePCState (S2/4-1)
 #define StartupPCState  (S3/4-1)
-#endif    // HOST_SNAKE
+#endif 	// HOST_SNAKE
 
 #ifdef HOST_i386
 
