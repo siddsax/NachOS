@@ -41,8 +41,13 @@ class TranslationEntry
     // page is referenced or modified.
     bool dirty; // This bit is set by the hardware every time the
     // page is modified.
-
+/* ------------------------ CUSTOM ------------------------ */
     bool shared;
+    long long int ticks;
+    int threadPID;
+    // I hope using a pointer won't create any havoc
+    bool isBackedUp;
+/* ------------------------ CUSTOM ------------------------ */
 };
 
 #endif

@@ -60,6 +60,10 @@ public:
 
     void *GetMinPriorityThread(void);
 
+    // /* ------------------------ CUSTOM ------------------------ */
+    // void SearchByItem(void *item);
+    // /* ------------------------ CUSTOM ------------------------ */
+
 private:
     ListElement *first;    // Head of the list, NULL if list is empty
     ListElement *last;        // Last element of list

@@ -45,8 +45,16 @@ public:
   unsigned int GetNextFreePage(int parentPage);
   bool DemandAllocation(int vpaddress);
 
+  unsigned int GetRandomPage(int parentPage);
+  unsigned int GetFirstPage(int parentPage);
+  unsigned int GetLRUPage(int parentPage);
+  unsigned int GetLRUCLOCKPage(int parentPage);
+/* ------------------------ CUSTOM ------------------------ */
+
+/* ------------------------ CUSTOM ------------------------ */
+  char *backUpStore;
+/* ------------------------ CUSTOM ------------------------ */
   char *fileName;
-  /* ------------------------ CUSTOM ------------------------ */
 
 private:
   TranslationEntry *KernelPageTable; // Assume linear page table translation

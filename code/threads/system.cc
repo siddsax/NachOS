@@ -36,6 +36,18 @@ int cpu_burst_start_time;                  // Records the start of current CPU b
 int completionTimeArray[MAX_THREAD_COUNT]; // Records the completion time of all simulated threads
 bool excludeMainThread;                    // Used by completion time statistics calculation
 
+/* ------------------------ CUSTOM ------------------------ */
+TranslationEntry *InvertedPageTable;
+    // // Shared pages never get swapped out so this must be safe
+    // TranslationEntry* PhysicalPagesToBackUp[NumPhysPages];
+    // int *lruClockQueue;
+    // int cur;
+/* ------------------------ CUSTOM ------------------------ */
+
+/* ------------------------ CUSTOM ------------------------ */
+int pageReplaceAlgo;
+/* ------------------------ CUSTOM ------------------------ */
+
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
 #endif
@@ -54,10 +66,6 @@ PostOffice *postOffice;
 
 // External definition, to allow us to take a pointer to this function
 extern void Cleanup();
-
-/* ------------------------ CUSTOM ------------------------ */
-int pageReplaceAlgo;
-/* ------------------------ CUSTOM ------------------------ */
 
 //----------------------------------------------------------------------
 // TimerInterruptHandler

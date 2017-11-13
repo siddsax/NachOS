@@ -35,6 +35,12 @@
 #define DEFAULT_BASE_PRIORITY 50 // Default base priority (used by UNIX scheduler)
 #define GET_NICE_FROM_PARENT -1
 
+// For the replacement algo to be used
+#define RANDOM 1
+#define FIFO 2
+#define LRU 3
+#define LRUCLOCK 4
+
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); // Initialization,
 // called before anything else
@@ -64,6 +70,14 @@ extern bool excludeMainThread;    // Used by completion time statistics calculat
 
 /* ------------------------ CUSTOM ------------------------ */
 extern int pageReplaceAlgo;
+/* ------------------------ CUSTOM ------------------------ */
+
+/* ------------------------ CUSTOM ------------------------ */
+extern TranslationEntry *InvertedPageTable;
+    // Shared pages never get swapped out so this must be safe
+    // TranslationEntry* PhysicalPagesToBackUp[NumPhysPages];
+    // int *lruClockQueue;
+    // int cur;
 /* ------------------------ CUSTOM ------------------------ */
 
 class TimeSortedWaitQueue

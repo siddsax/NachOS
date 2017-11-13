@@ -292,3 +292,26 @@ List::GetMinPriorityThread(void) {
     delete minptr;
     return thing;
 }
+
+
+// /* ------------------------ CUSTOM ------------------------ */
+// // To remove the searched item 
+// void
+// List::SearchByItem(int item){
+//     ListElement *ptr = first;
+//     ListElement *temp;
+//     if((int)(*(first->item) ) == item){
+//         temp = (ListElement*)SortedRemove(NULL);
+//     }
+//     else{
+//         for(ptr = first ; ptr!=NULL ; ptr=ptr->next) {
+//             if( (int)(*((ptr->next)->item) ) == item ) {
+//                 temp = ptr->next;
+//                 ptr->next = temp->next;
+//                 temp->next = NULL;
+//                 delete temp;
+//             }
+//         }
+//     }
+// }
+// /* ------------------------ CUSTOM ------------------------ */

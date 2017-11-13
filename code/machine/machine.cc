@@ -70,6 +70,10 @@ Machine::Machine(bool debug) {
     KernelPageTable = NULL;
 #endif
 
+    /* ------------------------ CUSTOM ------------------------ */
+    InvertedPageTable = new TranslationEntry[NumPhysPages];
+    /* ------------------------ CUSTOM ------------------------ */
+
     singleStep = debug;
     CheckEndian();
 }

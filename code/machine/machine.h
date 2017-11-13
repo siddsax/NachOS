@@ -186,7 +186,6 @@ public:
 
     TranslationEntry *tlb;        // this pointer should be considered
     // "read-only" to Nachos kernel code
-
     TranslationEntry *KernelPageTable;
     unsigned int KernelPageTableSize;
 

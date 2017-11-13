@@ -77,6 +77,8 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
 
     numVirtualPages = divRoundUp(size, PageSize);
     size = numVirtualPages * PageSize;
+    // Backup for every thread
+    backUpStore = new char[numVirtualPages*PageSize];
 
     ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
 
@@ -95,6 +97,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
             KernelPageTable[i].use = FALSE;
             KernelPageTable[i].dirty = FALSE;
             KernelPageTable[i].readOnly = FALSE;
+            KernelPageTable[i].isBackedUp = FALSE;
         }
 
         bzero(&machine->mainMemory[numPagesAllocated * PageSize], size);
@@ -132,6 +135,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
             KernelPageTable[i].use = FALSE;
             KernelPageTable[i].dirty = FALSE;
             KernelPageTable[i].readOnly = FALSE;
+            KernelPageTable[i].isBackedUp = FALSE;
         }
     }
     /* ------------------------ CUSTOM ------------------------ */
@@ -154,6 +158,9 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
     numVirtualPages = parentSpace->GetNumPages();
     unsigned i, j, size = numVirtualPages * PageSize;
 
+    // Backup for every thread
+    backUpStore = new char[numVirtualPages*PageSize];
+
     ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n",
@@ -172,11 +179,16 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
         KernelPageTable[i].readOnly = parentPageTable[i].readOnly;
         KernelPageTable[i].dirty = parentPageTable[i].dirty;
         KernelPageTable[i].shared = parentPageTable[i].shared;
+        KernelPageTable[i].isBackedUp = parentPageTable[i].isBackedUp;
 
         if (parentPageTable[i].valid == TRUE && parentPageTable[i].shared == FALSE)
         {
             KernelPageTable[i].physicalPage = GetNextFreePage(parentPageTable[i].physicalPage);
             KernelPageTable[i].valid = TRUE;
+            
+            /* ------------------------ CUSTOM ------------------------ */
+            InvertedPageTable[ KernelPageTable[i].physicalPage ].virtualPage = i;
+            /* ------------------------ CUSTOM ------------------------ */
 
             startAddrParent = parentPageTable[i].physicalPage * PageSize;
             startAddrChild = KernelPageTable[i].physicalPage * PageSize;
@@ -216,6 +228,7 @@ unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
         newPageTable[i].dirty = KernelPageTable[i].dirty;
         newPageTable[i].readOnly = KernelPageTable[i].readOnly;
         newPageTable[i].shared = KernelPageTable[i].shared;
+        newPageTable[i].isBackedUp = KernelPageTable[i].isBackedUp;
     }
 
     delete KernelPageTable;
@@ -230,6 +243,10 @@ unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
         newPageTable[i].use = FALSE;
         newPageTable[i].readOnly = FALSE;
         newPageTable[i].shared = TRUE;
+        newPageTable[i].isBackedUp = FALSE;
+
+        // No need
+        InvertedPageTable[ newPageTable[i].physicalPage ].shared = TRUE;
     }
 
     int returnValue = numVirtualPages * PageSize;
@@ -270,6 +287,9 @@ bool ProcessAddressSpace::DemandAllocation(int vpaddress)
     KernelPageTable[vpn].valid = TRUE;
     KernelPageTable[vpn].dirty = FALSE;
     KernelPageTable[vpn].physicalPage = phyPageNum;
+    KernelPageTable[vpn].isBackedUp = FALSE;
+
+    InvertedPageTable[phyPageNum].virtualPage = vpn;
 
     flag = TRUE;
     return flag;
@@ -277,13 +297,75 @@ bool ProcessAddressSpace::DemandAllocation(int vpaddress)
 /* ------------------------ CUSTOM ------------------------ */
 
 /* ------------------------ CUSTOM ------------------------ */
-unsigned int ProcessAddressSpace::GetNextFreePage(int currentPage)
+// Need to set PID of the thread in this function only
+unsigned int ProcessAddressSpace::GetNextFreePage(int parentPage)
 {
-    switch (pageReplaceAlgo)
-    {
-    default:
-        return numPagesAllocated++;
+    int pageToBeOccupied = -1;    
+
+    if(numPagesAllocated == NumPhysPages){
+
+        int pageToBeReplaced = -1;
+
+        switch (pageReplaceAlgo)
+        {
+            case RANDOM:
+                pageToBeReplaced = GetRandomPage(parentPage);
+            break;
+            case FIFO:
+                pageToBeReplaced = GetFirstPage(parentPage);
+            break;
+            case LRU:
+                pageToBeReplaced = GetLRUPage(parentPage);
+            break;
+            case LRUCLOCK:
+                pageToBeReplaced = GetLRUCLOCKPage(parentPage);
+            break;
+        default:
+            return numPagesAllocated++;
+        }
+
+        ASSERT(pageToBeReplaced != parentPage);
+        ASSERT(InvertedPageTable[pageToBeReplaced].shared == FALSE);
+        ASSERT(pageToBeReplaced >= 0 && pageToBeReplaced < NumPhysPages);
+
+        if(InvertedPageTable[pageToBeReplaced].dirty == TRUE){
+            int vpn = InvertedPageTable[ pageToBeReplaced ].virtualPage;
+            ProcessAddressSpace*  tempSpace = threadArray[ InvertedPageTable[ pageToBeReplaced ].threadPID ]->space;
+            char* arr = tempSpace->backUpStore;
+
+            for(int i=0 ; i<PageSize ; i++) { arr[ vpn*PageSize + i ] = machine->mainMemory[ pageToBeReplaced*PageSize + i ]; }
+            tempSpace->KernelPageTable[vpn].valid = FALSE;
+            tempSpace->KernelPageTable[vpn].dirty = FALSE;
+            tempSpace->KernelPageTable[vpn].isBackedUp = TRUE;
+        }
+
+        pageToBeOccupied = pageToBeReplaced;
     }
+    else{
+        for(int i=0 ; i<NumPhysPages ; i++){
+            if(InvertedPageTable[i].valid == FALSE) { 
+                pageToBeOccupied = i;
+                numPagesAllocated++;
+                break;
+            }
+        }
+        // Testing random
+        // if(pageReplaceAlgo == LRU){
+
+        // }
+        // else if(pageReplaceAlgo == LRUCLOCK){
+
+        // }
+    }
+
+// Note : Virtual page number is set in the callers
+    InvertedPageTable[pageToBeOccupied].threadPID = currentThread->GetPID();
+    InvertedPageTable[pageToBeOccupied].valid = TRUE;
+    InvertedPageTable[pageToBeOccupied].dirty = FALSE;
+    InvertedPageTable[pageToBeOccupied].shared = FALSE;
+
+    return pageToBeOccupied;
+
 }
 /* ------------------------ CUSTOM ------------------------ */
 
@@ -295,6 +377,13 @@ unsigned int ProcessAddressSpace::GetNextFreePage(int currentPage)
 
 ProcessAddressSpace::~ProcessAddressSpace()
 {
+    for(int i=0 ; i<numVirtualPages ; i++){
+        if(KernelPageTable[i].valid == TRUE){
+            // What about shared pages
+            InvertedPageTable[ KernelPageTable[i].physicalPage ].valid = FALSE;
+        }
+    }
+    delete backUpStore;
     delete KernelPageTable;
 }
 
@@ -366,3 +455,30 @@ ProcessAddressSpace::GetPageTable()
 {
     return KernelPageTable;
 }
+
+/* ------------------------ CUSTOM ------------------------ */
+unsigned
+ProcessAddressSpace::GetRandomPage(int parentPage){
+    int pageToBeReplaced = parentPage;
+
+    while(pageToBeReplaced == parentPage || InvertedPageTable[pageToBeReplaced].shared == TRUE) { 
+        pageToBeReplaced = (Random() % NumPhysPages); 
+    }
+
+    ASSERT(pageToBeReplaced >= 0 && pageToBeReplaced < NumPhysPages);
+
+    return pageToBeReplaced;
+}
+
+unsigned
+ProcessAddressSpace::GetFirstPage(int parentPage){
+}
+
+unsigned
+ProcessAddressSpace::GetLRUPage(int parentPage){
+}
+
+unsigned
+ProcessAddressSpace::GetLRUCLOCKPage(int parentPage){
+}
+/* ------------------------ CUSTOM ------------------------ */
