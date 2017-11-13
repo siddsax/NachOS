@@ -39,12 +39,14 @@ public:
 
   TranslationEntry *GetPageTable();
 
+  /* ------------------------ CUSTOM ------------------------ */
   unsigned int AllocateSharedMemory(int size);
 
   unsigned int GetNextFreePage(int parentPage);
   bool DemandAllocation(int vpaddress);
 
   char *fileName;
+  /* ------------------------ CUSTOM ------------------------ */
 
 private:
   TranslationEntry *KernelPageTable; // Assume linear page table translation

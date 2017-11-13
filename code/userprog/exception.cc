@@ -108,24 +108,6 @@ void ExceptionHandler(ExceptionType which)
         DEBUG('a', "Shutdown, initiated by user program.\n");
         interrupt->Halt();
     }
-    //----------------------CUSTOM---------------------------------------------
-    else if ((which == PageFaultException))
-    {
-        if (pageReplaceAlgo == 0)
-        {
-            printf("ERROR, fault without page demand");
-        }
-
-        IntStatus oldLevel = interrupt->SetLevel(IntOff);
-
-        int vpaddress = machine->ReadRegister(BadVAddrReg);
-        ASSERT(currentThread->space->DemandAllocation(vpaddress));
-
-        currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
-
-        (void)interrupt->SetLevel(oldLevel); // re-enable interrupts
-    }
-    //----------------------CUSTOM---------------------------------
     else if ((which == SyscallException) && (type == SysCall_Exit))
     {
         exitcode = machine->ReadRegister(4);
@@ -145,7 +127,6 @@ void ExceptionHandler(ExceptionType which)
     }
     else if ((which == SyscallException) && (type == SysCall_Exec))
     {
-        // Copy the executable name into kernel space
         vaddr = machine->ReadRegister(4);
 
         bool read = FALSE;
@@ -163,7 +144,7 @@ void ExceptionHandler(ExceptionType which)
                 read = machine->ReadMem(vaddr, 1, &memval);
         }
         buffer[i] = (*(char *)&memval);
-        //LaunchUserProcess(buffer);
+        LaunchUserProcess(buffer);
     }
     else if ((which == SyscallException) && (type == SysCall_Join))
     {
@@ -189,6 +170,23 @@ void ExceptionHandler(ExceptionType which)
             machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
         }
     }
+    /* ------------------------ CUSTOM ------------------------ */
+    else if ((which == PageFaultException))
+    {
+        if (pageReplaceAlgo == 0)
+        {
+            printf("ERROR, fault without page demand");
+        }
+
+        IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+        int vpaddress = machine->ReadRegister(BadVAddrReg);
+        ASSERT(currentThread->space->DemandAllocation(vpaddress));
+
+        currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
+
+        (void)interrupt->SetLevel(oldLevel); // re-enable interrupts
+    }
     else if ((which == SyscallException) && (type == SysCall_ShmAllocate))
     {
         unsigned int size = machine->ReadRegister(4);
@@ -201,6 +199,7 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
+    /* ------------------------ CUSTOM ------------------------ */
     else if ((which == SyscallException) && (type == SysCall_Fork))
     {
         // Advance program counters.

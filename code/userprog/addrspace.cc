@@ -84,6 +84,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
           numVirtualPages, size);
 
     KernelPageTable = new TranslationEntry[numVirtualPages];
+    /* ------------------------ CUSTOM ------------------------ */
     if (pageReplaceAlgo == 0)
     {
         for (i = 0; i < numVirtualPages; i++)
@@ -133,6 +134,7 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
             KernelPageTable[i].readOnly = FALSE;
         }
     }
+    /* ------------------------ CUSTOM ------------------------ */
 }
 
 //----------------------------------------------------------------------
@@ -162,6 +164,7 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
 
     unsigned startAddrParent, startAddrChild;
 
+    /* ------------------------ CUSTOM ------------------------ */
     for (int i = 0; i < numVirtualPages; i++)
     {
         KernelPageTable[i].virtualPage = i;
@@ -182,7 +185,6 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
             {
                 machine->mainMemory[startAddrChild + j] = machine->mainMemory[startAddrParent + j];
             }
-            stats->pageFaultCount++;
 
             currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
         }
@@ -192,8 +194,10 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
             KernelPageTable[i].valid = parentPageTable[i].valid;
         }
     }
+    /* ------------------------ CUSTOM ------------------------ */
 }
 
+/* ------------------------ CUSTOM ------------------------ */
 unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
 {
     unsigned int numRequiredPages = numVirtualPages + divRoundUp(size, PageSize);
@@ -214,37 +218,37 @@ unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
         newPageTable[i].shared = KernelPageTable[i].shared;
     }
 
+    delete KernelPageTable;
+    KernelPageTable = newPageTable;
+
     for (i = numVirtualPages; i < numRequiredPages; i++)
     {
         newPageTable[i].virtualPage = i;
-        newPageTable[i].physicalPage = GetNextFreePage(-1);
-        newPageTable[i].valid = TRUE;
+
+        DemandAllocation(i);
+
         newPageTable[i].use = FALSE;
-        newPageTable[i].dirty = FALSE;
         newPageTable[i].readOnly = FALSE;
         newPageTable[i].shared = TRUE;
     }
 
-    int returnValue = numVirtualPages;
-
-    delete KernelPageTable;
-    KernelPageTable = newPageTable;
+    int returnValue = numVirtualPages * PageSize;
 
     numVirtualPages = numRequiredPages;
     RestoreContextOnSwitch();
 
-    return returnValue * PageSize;
+    return returnValue;
 }
+/* ------------------------ CUSTOM ------------------------ */
 
+/* ------------------------ CUSTOM ------------------------ */
 bool ProcessAddressSpace::DemandAllocation(int vpaddress)
 {
-
     bool flag = FALSE;
     int vpn = vpaddress / PageSize;
     int phyPageNum = GetNextFreePage(-1);
 
     bzero(&machine->mainMemory[phyPageNum * PageSize], PageSize);
-    //-----------------backup related to page replacement to be introduced-----------------------
 
     NoffHeader noffH;
     progExecutable = fileSystem->Open(fileName);
@@ -270,7 +274,9 @@ bool ProcessAddressSpace::DemandAllocation(int vpaddress)
     flag = TRUE;
     return flag;
 }
+/* ------------------------ CUSTOM ------------------------ */
 
+/* ------------------------ CUSTOM ------------------------ */
 unsigned int ProcessAddressSpace::GetNextFreePage(int currentPage)
 {
     switch (pageReplaceAlgo)
@@ -279,6 +285,7 @@ unsigned int ProcessAddressSpace::GetNextFreePage(int currentPage)
         return numPagesAllocated++;
     }
 }
+/* ------------------------ CUSTOM ------------------------ */
 
 //---------------------------------------------------------------------------------
 //----------------------------------------------------------------------
