@@ -288,6 +288,7 @@ void ProcessAddressSpace::DemandAllocation(int vpaddress)
             ASSERT(false);
         }
         progExecutable->ReadAt(&(machine->mainMemory[phyPageNum * PageSize]), PageSize, noffH.code.inFileAddr + vpn * PageSize);
+        delete progExecutable;
     }
 
     KernelPageTable[vpn].valid = TRUE;
@@ -471,8 +472,7 @@ ProcessAddressSpace::~ProcessAddressSpace()
                 }
                 /* ------------------------ CUSTOM ------------------------ */
             }
-
-            physicalPagesList[phyPage].threadPID = -1;
+            if(KernelPageTable[i].shared == FALSE) { physicalPagesList[phyPage].threadPID = -1; }
         }
     }
 
