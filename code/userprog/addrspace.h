@@ -11,8 +11,9 @@ class ProcessAddressSpace
 public:
   /* ------------------------ CUSTOM ------------------------ */
   ProcessAddressSpace(OpenFile *executable, char *filename);
-  ProcessAddressSpace(ProcessAddressSpace *parentSpace, int childPID);
   /* ------------------------ CUSTOM ------------------------ */
+
+  ProcessAddressSpace(ProcessAddressSpace *parentSpace);
 
   ~ProcessAddressSpace();
 
@@ -26,6 +27,8 @@ public:
   TranslationEntry *GetPageTable();
 
   /* ------------------------ CUSTOM ------------------------ */
+  void InitiateForkedProcessAddressSpace(ProcessAddressSpace *parentSpace, int childPID);
+
   unsigned int AllocateSharedMemory(int size);
 
   unsigned int GetPhysicalPage(int parentPage, int virtualPage);

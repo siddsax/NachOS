@@ -104,7 +104,26 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable, char *filename)
     /* ------------------------ CUSTOM ------------------------ */
 }
 
-ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace, int childPID)
+ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
+{
+    /* ------------------------ CUSTOM ------------------------ */
+    fileName = parentSpace->fileName;
+    progExecutable = fileSystem->Open(fileName);
+    if (progExecutable == NULL)
+    {
+        printf("Unable to open file %s\n", fileName);
+        ASSERT(false);
+    }
+
+    numVirtualPages = parentSpace->GetNumPages();
+    unsigned i, size = numVirtualPages * PageSize;
+
+    KernelPageTable = new TranslationEntry[numVirtualPages];
+    backup = new char[size];
+    /* ------------------------ CUSTOM ------------------------ */
+}
+
+void ProcessAddressSpace::InitiateForkedProcessAddressSpace(ProcessAddressSpace *parentSpace, int childPID)
 {
     unsigned i, j, size = numVirtualPages * PageSize;
 
@@ -176,8 +195,9 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace, int c
 unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
 {
     unsigned int numRequiredPages = numVirtualPages + divRoundUp(size, PageSize);
+    numSharedPages += divRoundUp(size, PageSize);
 
-    ASSERT(numRequiredPages <= NumPhysPages)
+    ASSERT(numSharedPages < NumPhysPages);
 
     TranslationEntry *newPageTable = new TranslationEntry[numRequiredPages];
 
@@ -378,6 +398,7 @@ ProcessAddressSpace::~ProcessAddressSpace()
             if (!KernelPageTable[i].shared)
             {
                 physicalPagesList[phyPage].virtualPage = -1;
+                numPagesAllocated--;
             }
 
             physicalPagesList[phyPage].threadPID = -1;

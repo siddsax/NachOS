@@ -76,6 +76,8 @@ extern int MemorySize;
 
 extern PhysicalPagesList *physicalPagesList;
 
+extern unsigned numSharedPages;
+
 #define PageSize SectorSize
 
 #define RANDOM 1

@@ -156,7 +156,8 @@ void ExceptionHandler(ExceptionType which)
 
         child = new NachOSThread("Forked thread", GET_NICE_FROM_PARENT);
 
-        child->space = new ProcessAddressSpace(currentThread->space, child->GetPID());
+        child->space = new ProcessAddressSpace(currentThread->space);
+        child->space->InitiateForkedProcessAddressSpace(currentThread->space, child->GetPID());
         child->SaveUserState();
         child->ResetReturnValue();
         child->CreateThreadStack(ForkStartFunction, 0);

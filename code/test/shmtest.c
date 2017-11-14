@@ -2,9 +2,9 @@
 
 #define NUM_ITER 200
 
-int
-main() {
-    int *array = (int *) syscall_wrapper_ShmAllocate(2 * sizeof(int));
+int main()
+{
+    int *array = (int *)syscall_wrapper_ShmAllocate(2 * sizeof(int));
     int x, i;
 
     array[0] = 0;

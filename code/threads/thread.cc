@@ -111,10 +111,14 @@ NachOSThread::~NachOSThread()
         DeallocBoundedArray((char *)stack, StackSize * sizeof(int));
     }
 
+#ifdef USER_PROGRAM
+    /* ------------------------ CUSTOM ------------------------ */
     if (space != NULL)
     {
         delete space;
     }
+#endif
+    /* ------------------------ CUSTOM ------------------------ */
 }
 
 //----------------------------------------------------------------------

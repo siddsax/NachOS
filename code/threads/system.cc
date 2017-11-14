@@ -44,6 +44,8 @@ PostOffice *postOffice;
 extern void Cleanup();
 
 /* ------------------------ CUSTOM ------------------------ */
+unsigned numSharedPages;
+
 int pageReplaceAlgo;
 
 int NumPhysPages;
@@ -90,9 +92,11 @@ void Initialize(int argc, char **argv)
     schedulingAlgo = NON_PREEMPTIVE_BASE;
 
     /* ------------------------ CUSTOM ------------------------ */
+    numSharedPages = 0;
+
     pageReplaceAlgo = 1;
 
-    NumPhysPages = 15;
+    NumPhysPages = 12;
     MemorySize = NumPhysPages * PageSize;
 
     physicalPagesList = new PhysicalPagesList[NumPhysPages];
