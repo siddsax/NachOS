@@ -302,6 +302,9 @@ void ProcessAddressSpace::DemandAllocation(int vpaddress)
 unsigned int ProcessAddressSpace::GetPhysicalPage(int parentPagePhysicalNumber, int virtualPage)
 {
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
+    stats->numPageFaults++;
+
     if (pageReplaceAlgo == 0)
     {
         return numPagesAllocated++;
@@ -362,8 +365,6 @@ unsigned int ProcessAddressSpace::GetPhysicalPage(int parentPagePhysicalNumber, 
         threadAddressSpace->KernelPageTable[vpn].backed = TRUE;
         threadAddressSpace->KernelPageTable[vpn].valid = FALSE;
         threadAddressSpace->KernelPageTable[vpn].dirty = FALSE;
-
-        stats->numPageFaults++;
 
         pageToBeOccupied = pageToBeReplaced;
     }

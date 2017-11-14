@@ -22,4 +22,4 @@ make
 
 echo -e "\n\n" 
 
-./nachos -rs 0 -A 3 -R 3 -x ../test/$1
+./nachos -rs 0 -A 3 -R 1 -x ../test/$1

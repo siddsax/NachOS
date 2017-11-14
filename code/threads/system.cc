@@ -96,8 +96,6 @@ void Initialize(int argc, char **argv)
     /* ------------------------ CUSTOM ------------------------ */
     numSharedPages = 0;
 
-    pageReplaceAlgo = 1;
-
     switch (pageReplaceAlgo)
     {
     case 1:
