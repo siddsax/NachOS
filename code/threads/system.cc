@@ -52,6 +52,8 @@ int NumPhysPages;
 int MemorySize;
 
 PhysicalPagesList *physicalPagesList;
+
+int pointReference;
 /* ------------------------ CUSTOM ------------------------ */
 
 static void
@@ -96,10 +98,12 @@ void Initialize(int argc, char **argv)
 
     pageReplaceAlgo = 1;
 
-    NumPhysPages = 12;
+    NumPhysPages = 10;
     MemorySize = NumPhysPages * PageSize;
 
     physicalPagesList = new PhysicalPagesList[NumPhysPages];
+
+    pointReference = 0;
     /* ------------------------ CUSTOM ------------------------ */
 
     batchProcesses = new char *[MAX_BATCH_SIZE];

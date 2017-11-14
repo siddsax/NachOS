@@ -3,15 +3,6 @@
 #include "addrspace.h"
 #include "noff.h"
 
-void printAllPages()
-{
-    unsigned i;
-    for (i = 0; i < NumPhysPages; i++)
-    {
-        printf("\n\t(%d.) THREAD: %d, SHARED = %d, VPN = %d\n", i, physicalPagesList[i].threadPID, physicalPagesList[i].shared, physicalPagesList[i].virtualPage);
-    }
-}
-
 static void SwapHeader(NoffHeader *noffH)
 {
     noffH->noffMagic = WordToHost(noffH->noffMagic);
@@ -125,8 +116,6 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
     KernelPageTable = new TranslationEntry[numVirtualPages];
     backup = new char[size];
     bzero(backup, size);
-
-    printf("\n ############# Space Initialization called from %d\n", currentThread->GetPID());
     /* ------------------------ CUSTOM ------------------------ */
 }
 
@@ -148,7 +137,7 @@ void ProcessAddressSpace::InitiateForkedProcessAddressSpace(ProcessAddressSpace 
     numVirtualPages = parentSpace->GetNumPages();
 
     /* ------------------------ CUSTOM ------------------------ */
-    if (pageReplaceAlgo == 0)
+    if (pageReplaceAlgo == NDEMAND)
     {
         ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
     }
@@ -160,9 +149,6 @@ void ProcessAddressSpace::InitiateForkedProcessAddressSpace(ProcessAddressSpace 
     TranslationEntry *parentPageTable = parentSpace->GetPageTable();
 
     unsigned startAddrParent, startAddrChild;
-
-    printf("\BEFORE FORK\n");
-    printAllPages();
 
     /* ------------------------ CUSTOM ------------------------ */
     for (i = 0; i < size; i++)
@@ -183,6 +169,7 @@ void ProcessAddressSpace::InitiateForkedProcessAddressSpace(ProcessAddressSpace 
         if (parentPageTable[i].valid == TRUE && parentPageTable[i].shared == FALSE)
         {
             KernelPageTable[i].physicalPage = GetPhysicalPage(parentPageTable[i].physicalPage, i);
+
             physicalPagesList[KernelPageTable[i].physicalPage].threadPID = childPID;
 
             startAddrParent = parentPageTable[i].physicalPage * PageSize;
@@ -193,6 +180,9 @@ void ProcessAddressSpace::InitiateForkedProcessAddressSpace(ProcessAddressSpace 
                 machine->mainMemory[startAddrChild + j] = machine->mainMemory[startAddrParent + j];
             }
 
+            physicalPagesList[KernelPageTable[i].physicalPage].reference = TRUE;
+            physicalPagesList[KernelPageTable[i].physicalPage].usageTime = stats->totalTicks;
+
             currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
         }
         else
@@ -201,9 +191,6 @@ void ProcessAddressSpace::InitiateForkedProcessAddressSpace(ProcessAddressSpace 
         }
     }
     /* ------------------------ CUSTOM ------------------------ */
-
-    printf("\nAFTER FORK\n");
-    printAllPages();
 }
 
 /* ------------------------ CUSTOM ------------------------ */
@@ -343,15 +330,15 @@ unsigned int ProcessAddressSpace::GetPhysicalPage(int parentPagePhysicalNumber, 
         case RANDOM:
             pageToBeReplaced = GetRandomPage(parentPagePhysicalNumber);
             break;
-        // case FIFO:
-        //     pageToBeReplaced = GetFirstPage(parentPagePhysicalNumber);
-        //     break;
-        // case LRU:
-        //     pageToBeReplaced = GetLRUPage(parentPagePhysicalNumber);
-        //     break;
-        // case LRUCLOCK:
-        //     pageToBeReplaced = GetLRUCLOCKPage(parentPagePhysicalNumber);
-        //     break;
+        case FIFO:
+            pageToBeReplaced = GetFIFOPage(parentPagePhysicalNumber);
+            break;
+        case LRU:
+            pageToBeReplaced = GetLRUPage(parentPagePhysicalNumber);
+            break;
+        case LRUCLOCK:
+            pageToBeReplaced = GetLRUCLOCKPage(parentPagePhysicalNumber);
+            break;
         default:
             ASSERT(FALSE);
         }
@@ -376,11 +363,16 @@ unsigned int ProcessAddressSpace::GetPhysicalPage(int parentPagePhysicalNumber, 
         threadAddressSpace->KernelPageTable[vpn].valid = FALSE;
         threadAddressSpace->KernelPageTable[vpn].dirty = FALSE;
 
+        stats->numPageFaults++;
+
         pageToBeOccupied = pageToBeReplaced;
     }
 
     bzero(&machine->mainMemory[pageToBeOccupied * PageSize], PageSize);
 
+    physicalPagesList[pageToBeOccupied].entryTime = stats->totalTicks;
+    physicalPagesList[pageToBeOccupied].usageTime = stats->totalTicks;
+    physicalPagesList[pageToBeOccupied].reference = TRUE;
     physicalPagesList[pageToBeOccupied].threadPID = currentThread->GetPID();
     physicalPagesList[pageToBeOccupied].virtualPage = virtualPage;
     physicalPagesList[pageToBeOccupied].shared = FALSE;
@@ -389,9 +381,7 @@ unsigned int ProcessAddressSpace::GetPhysicalPage(int parentPagePhysicalNumber, 
 
     return pageToBeOccupied;
 }
-/* ------------------------ CUSTOM ------------------------ */
 
-/* ------------------------ CUSTOM ------------------------ */
 unsigned int ProcessAddressSpace::GetRandomPage(int parentPagePhysicalNumber)
 {
     int pageToBeReplaced = parentPagePhysicalNumber;
@@ -403,28 +393,96 @@ unsigned int ProcessAddressSpace::GetRandomPage(int parentPagePhysicalNumber)
 
     return pageToBeReplaced;
 }
+
+unsigned int ProcessAddressSpace::GetFIFOPage(int parentPagePhysicalNumber)
+{
+    int pageToBeReplaced = -1, minTicks = INF;
+
+    for (int i = 0; i < NumPhysPages; i++)
+    {
+        if (i == parentPagePhysicalNumber || physicalPagesList[i].shared == TRUE || physicalPagesList[i].entryTime == INF)
+        {
+            continue;
+        }
+
+        if (physicalPagesList[i].entryTime < minTicks)
+        {
+            minTicks = physicalPagesList[i].entryTime;
+            pageToBeReplaced = i;
+        }
+    }
+
+    return pageToBeReplaced;
+}
+
+unsigned int ProcessAddressSpace::GetLRUPage(int parentPagePhysicalNumber)
+{
+    int pageToBeReplaced = -1, minTicks = INF;
+
+    for (int i = 0; i < NumPhysPages; i++)
+    {
+        if (i == parentPagePhysicalNumber || physicalPagesList[i].shared == TRUE || physicalPagesList[i].usageTime == INF)
+        {
+            continue;
+        }
+
+        if (physicalPagesList[i].usageTime < minTicks)
+        {
+            minTicks = physicalPagesList[i].usageTime;
+            pageToBeReplaced = i;
+        }
+    }
+
+    return pageToBeReplaced;
+}
+
+unsigned int ProcessAddressSpace::GetLRUCLOCKPage(int parentPagePhysicalNumber)
+{
+    int pageToBeReplaced = -1;
+
+    while (pageToBeReplaced == -1)
+    {
+        if (pointReference != parentPagePhysicalNumber && physicalPagesList[pointReference].shared == FALSE)
+        {
+            if (physicalPagesList[pointReference].reference == TRUE)
+            {
+                physicalPagesList[pointReference].reference = FALSE;
+            }
+            else
+            {
+                pageToBeReplaced = pointReference;
+                break;
+            }
+        }
+
+        pointReference = (pointReference + 1) % NumPhysPages;
+    }
+
+    return pageToBeReplaced;
+}
 /* ------------------------ CUSTOM ------------------------ */
 
 ProcessAddressSpace::~ProcessAddressSpace()
 {
+    /* ------------------------ CUSTOM ------------------------ */
     int i, phyPage;
     for (i = 0; i < numVirtualPages; i++)
     {
-        if (KernelPageTable[i].valid)
+        if (KernelPageTable[i].valid == TRUE && KernelPageTable[i].shared == FALSE)
         {
             phyPage = KernelPageTable[i].physicalPage;
-            if (!KernelPageTable[i].shared)
-            {
-                physicalPagesList[phyPage].virtualPage = -1;
-                numPagesAllocated--;
-            }
+
+            physicalPagesList[phyPage].virtualPage = -1;
             physicalPagesList[phyPage].threadPID = -1;
+            physicalPagesList[phyPage].usageTime = INF;
+            physicalPagesList[phyPage].entryTime = INF;
+            physicalPagesList[phyPage].reference = FALSE;
         }
     }
 
     delete KernelPageTable;
     delete backup;
-    // delete fileName;
+    /* ------------------------ CUSTOM ------------------------ */
 }
 
 void ProcessAddressSpace::InitUserModeCPURegisters()

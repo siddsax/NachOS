@@ -54,6 +54,8 @@ extern int completionTimeArray[];
 extern bool excludeMainThread;
 
 /* ------------------------ CUSTOM ------------------------ */
+#define INF 10000007
+
 class PhysicalPagesList
 {
 public:
@@ -62,11 +64,17 @@ public:
     virtualPage = -1;
     shared = FALSE;
     threadPID = -1;
+    reference = FALSE;
+    usageTime = INF;
+    entryTime = INF;
   }
 
   int virtualPage;
   int threadPID;
+  bool reference;
   bool shared;
+  int usageTime;
+  int entryTime;
 };
 
 extern int pageReplaceAlgo;
@@ -80,10 +88,13 @@ extern unsigned numSharedPages;
 
 #define PageSize SectorSize
 
+#define NDEMAND 0
 #define RANDOM 1
 #define FIFO 2
 #define LRU 3
 #define LRUCLOCK 4
+
+extern int pointReference;
 /* ------------------------ CUSTOM ------------------------ */
 
 class TimeSortedWaitQueue

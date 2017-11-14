@@ -157,7 +157,6 @@ void ExceptionHandler(ExceptionType which)
         IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
         child = new NachOSThread("Forked thread", GET_NICE_FROM_PARENT);
-        printf("\n>>>>>>>>>> CALLING FORK FROM THREAD: %d TO THREAD %d\n", currentThread->GetPID(), child->GetPID());
 
         child->space = new ProcessAddressSpace(currentThread->space);
         child->space->InitiateForkedProcessAddressSpace(currentThread->space, child->GetPID());

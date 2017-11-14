@@ -126,6 +126,12 @@ int main(int argc, char **argv)
             currentThread->SetPriority(schedPriority + DEFAULT_BASE_PRIORITY);
             currentThread->SetUsage(0);
         }
+        else if (!strcmp(*argv, "-R"))
+        {
+            pageReplaceAlgo = atoi(*(argv + 1));
+            argCount = 2;
+            ASSERT((pageReplaceAlgo >= 0) && (pageReplaceAlgo <= 4));
+        }
         else if (!strcmp(*argv, "-x"))
         { // run a user program
             ASSERT(argc > 1);
