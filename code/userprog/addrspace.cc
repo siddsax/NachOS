@@ -18,8 +18,9 @@ SwapHeader(NoffHeader *noffH)
     noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
 
-ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
+ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable, char *filename)
 {
+    fileName = filename;
     progExecutable = executable;
 
     NoffHeader noffH;
@@ -29,9 +30,10 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
     unsigned int pageFrame;
 
     progExecutable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-    if ((noffH.noffMagic != NOFFMAGIC) &&
-        (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    {
         SwapHeader(&noffH);
+    }
     ASSERT(noffH.noffMagic == NOFFMAGIC);
 
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
@@ -39,28 +41,30 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
     numVirtualPages = divRoundUp(size, PageSize);
     size = numVirtualPages * PageSize;
 
-    ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
+    /* ------------------------ CUSTOM ------------------------ */
+    backup = new char[size];
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n",
           numVirtualPages, size);
 
     KernelPageTable = new TranslationEntry[numVirtualPages];
-    /* ------------------------ CUSTOM ------------------------ */
     if (pageReplaceAlgo == 0)
     {
+        ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
+
+        bzero(&machine->mainMemory[numPagesAllocated * PageSize], size);
+
         for (i = 0; i < numVirtualPages; i++)
         {
             KernelPageTable[i].virtualPage = i;
-            KernelPageTable[i].physicalPage = i + numPagesAllocated;
+            KernelPageTable[i].physicalPage = GetPhysicalPage(-1, i);
             KernelPageTable[i].valid = TRUE;
             KernelPageTable[i].use = FALSE;
             KernelPageTable[i].dirty = FALSE;
             KernelPageTable[i].readOnly = FALSE;
+            KernelPageTable[i].shared = FALSE;
+            KernelPageTable[i].backed = FALSE;
         }
-
-        bzero(&machine->mainMemory[numPagesAllocated * PageSize], size);
-
-        numPagesAllocated += numVirtualPages;
 
         if (noffH.code.size > 0)
         {
@@ -93,13 +97,18 @@ ProcessAddressSpace::ProcessAddressSpace(OpenFile *executable)
             KernelPageTable[i].use = FALSE;
             KernelPageTable[i].dirty = FALSE;
             KernelPageTable[i].readOnly = FALSE;
+            KernelPageTable[i].shared = FALSE;
+            KernelPageTable[i].backed = FALSE;
         }
     }
     /* ------------------------ CUSTOM ------------------------ */
 }
 
-ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
+ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace, int childPID)
 {
+    unsigned i, j, size = numVirtualPages * PageSize;
+
+    /* ------------------------ CUSTOM ------------------------ */
     fileName = parentSpace->fileName;
     progExecutable = fileSystem->Open(fileName);
     if (progExecutable == NULL)
@@ -108,9 +117,12 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
         ASSERT(false);
     }
     numVirtualPages = parentSpace->GetNumPages();
-    unsigned i, j, size = numVirtualPages * PageSize;
+    /* ------------------------ CUSTOM ------------------------ */
 
-    ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
+    if (pageReplaceAlgo == 0)
+    {
+        ASSERT(numVirtualPages + numPagesAllocated <= NumPhysPages);
+    }
 
     DEBUG('a', "Initializing address space, num pages %d, size %d\n",
           numVirtualPages, size);
@@ -121,6 +133,12 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
     unsigned startAddrParent, startAddrChild;
 
     /* ------------------------ CUSTOM ------------------------ */
+    backup = new char[size];
+    for (i = 0; i < size; i++)
+    {
+        backup[i] = parentSpace->backup[i];
+    }
+
     for (int i = 0; i < numVirtualPages; i++)
     {
         KernelPageTable[i].virtualPage = i;
@@ -128,11 +146,13 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
         KernelPageTable[i].readOnly = parentPageTable[i].readOnly;
         KernelPageTable[i].dirty = parentPageTable[i].dirty;
         KernelPageTable[i].shared = parentPageTable[i].shared;
+        KernelPageTable[i].backed = parentPageTable[i].backed;
+        KernelPageTable[i].valid = parentPageTable[i].valid;
 
         if (parentPageTable[i].valid == TRUE && parentPageTable[i].shared == FALSE)
         {
-            KernelPageTable[i].physicalPage = GetNextFreePage(parentPageTable[i].physicalPage);
-            KernelPageTable[i].valid = TRUE;
+            KernelPageTable[i].physicalPage = GetPhysicalPage(parentPageTable[i].physicalPage, i);
+            physicalPagesList[KernelPageTable[i].physicalPage].threadPID = childPID;
 
             startAddrParent = parentPageTable[i].physicalPage * PageSize;
             startAddrChild = KernelPageTable[i].physicalPage * PageSize;
@@ -142,12 +162,11 @@ ProcessAddressSpace::ProcessAddressSpace(ProcessAddressSpace *parentSpace)
                 machine->mainMemory[startAddrChild + j] = machine->mainMemory[startAddrParent + j];
             }
 
-            currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
+            // currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
         }
         else
         {
             KernelPageTable[i].physicalPage = parentPageTable[i].physicalPage;
-            KernelPageTable[i].valid = parentPageTable[i].valid;
         }
     }
     /* ------------------------ CUSTOM ------------------------ */
@@ -172,21 +191,34 @@ unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
         newPageTable[i].dirty = KernelPageTable[i].dirty;
         newPageTable[i].readOnly = KernelPageTable[i].readOnly;
         newPageTable[i].shared = KernelPageTable[i].shared;
+        newPageTable[i].backed = KernelPageTable[i].backed;
+    }
+
+    char *newBackup;
+    newBackup = new char[numRequiredPages * PageSize];
+
+    for (i = 0; i < numVirtualPages * PageSize; i++)
+    {
+        newBackup[i] = backup[i];
+    }
+
+    for (i = numVirtualPages; i < numRequiredPages; i++)
+    {
+        newPageTable[i].virtualPage = i;
+        newPageTable[i].physicalPage = GetPhysicalPage(-1, i);
+        newPageTable[i].valid = TRUE;
+        newPageTable[i].dirty = FALSE;
+        newPageTable[i].use = FALSE;
+        newPageTable[i].readOnly = FALSE;
+        newPageTable[i].shared = TRUE;
+        newPageTable[i].backed = FALSE;
     }
 
     delete KernelPageTable;
     KernelPageTable = newPageTable;
 
-    for (i = numVirtualPages; i < numRequiredPages; i++)
-    {
-        newPageTable[i].virtualPage = i;
-
-        DemandAllocation(i);
-
-        newPageTable[i].use = FALSE;
-        newPageTable[i].readOnly = FALSE;
-        newPageTable[i].shared = TRUE;
-    }
+    delete backup;
+    backup = newBackup;
 
     int returnValue = numVirtualPages * PageSize;
 
@@ -198,54 +230,162 @@ unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
 /* ------------------------ CUSTOM ------------------------ */
 
 /* ------------------------ CUSTOM ------------------------ */
-bool ProcessAddressSpace::DemandAllocation(int vpaddress)
+void ProcessAddressSpace::DemandAllocation(int vpaddress)
 {
     bool flag = FALSE;
     int vpn = vpaddress / PageSize;
-    int phyPageNum = GetNextFreePage(-1);
+    int phyPageNum = GetPhysicalPage(-1, vpn);
 
     bzero(&machine->mainMemory[phyPageNum * PageSize], PageSize);
 
-    NoffHeader noffH;
-    progExecutable = fileSystem->Open(fileName);
-    progExecutable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-
-    if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    if (KernelPageTable[vpn].backed == TRUE)
     {
-        SwapHeader(&noffH);
+        unsigned int i;
+        for (i = 0; i < PageSize; i++)
+        {
+            machine->mainMemory[phyPageNum * PageSize + i] = backup[vpn * PageSize + i];
+        }
     }
-    ASSERT(noffH.noffMagic == NOFFMAGIC);
-
-    if (progExecutable == NULL)
+    else
     {
-        printf("Unable to open file \n");
-        ASSERT(false);
+        NoffHeader noffH;
+        progExecutable = fileSystem->Open(fileName);
+        progExecutable->ReadAt((char *)&noffH, sizeof(noffH), 0);
+
+        if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC))
+        {
+            SwapHeader(&noffH);
+        }
+        ASSERT(noffH.noffMagic == NOFFMAGIC);
+
+        if (progExecutable == NULL)
+        {
+            printf("Unable to open file \n");
+            ASSERT(false);
+        }
+        progExecutable->ReadAt(&(machine->mainMemory[phyPageNum * PageSize]), PageSize, noffH.code.inFileAddr + vpn * PageSize);
     }
-    progExecutable->ReadAt(&(machine->mainMemory[phyPageNum * PageSize]), PageSize, noffH.code.inFileAddr + vpn * PageSize);
 
     KernelPageTable[vpn].valid = TRUE;
     KernelPageTable[vpn].dirty = FALSE;
     KernelPageTable[vpn].physicalPage = phyPageNum;
-
-    flag = TRUE;
-    return flag;
 }
 /* ------------------------ CUSTOM ------------------------ */
 
 /* ------------------------ CUSTOM ------------------------ */
-unsigned int ProcessAddressSpace::GetNextFreePage(int currentPage)
+unsigned int ProcessAddressSpace::GetPhysicalPage(int parentPagePhysicalNumber, int virtualPage)
 {
-    switch (pageReplaceAlgo)
+
+    if (pageReplaceAlgo == 0)
     {
-    default:
         return numPagesAllocated++;
     }
+
+    int i, pageToBeOccupied = -1;
+
+    if (numPagesAllocated < NumPhysPages)
+    {
+        for (i = 0; i < NumPhysPages; i++)
+        {
+            if (physicalPagesList[i].threadPID == -1)
+            {
+                pageToBeOccupied = i;
+                numPagesAllocated++;
+                break;
+            }
+        }
+    }
+    else
+    {
+        int pageToBeReplaced = -1;
+
+        switch (pageReplaceAlgo)
+        {
+        case RANDOM:
+            pageToBeReplaced = GetRandomPage(parentPagePhysicalNumber);
+            break;
+        // case FIFO:
+        //     pageToBeReplaced = GetFirstPage(parentPagePhysicalNumber);
+        //     break;
+        // case LRU:
+        //     pageToBeReplaced = GetLRUPage(parentPagePhysicalNumber);
+        //     break;
+        // case LRUCLOCK:
+        //     pageToBeReplaced = GetLRUCLOCKPage(parentPagePhysicalNumber);
+        //     break;
+        default:
+            ASSERT(FALSE);
+        }
+
+        ASSERT(pageToBeReplaced != parentPagePhysicalNumber);
+        ASSERT(physicalPagesList[pageToBeReplaced].virtualPage != -1);
+        ASSERT(physicalPagesList[pageToBeReplaced].shared == FALSE);
+        ASSERT(pageToBeReplaced >= 0 && pageToBeReplaced < NumPhysPages);
+
+        int vpn = physicalPagesList[pageToBeReplaced].virtualPage;
+        ProcessAddressSpace *threadAddressSpace = threadArray[physicalPagesList[pageToBeReplaced].threadPID]->space;
+
+        if (threadAddressSpace->KernelPageTable[vpn].dirty == TRUE)
+        {
+            char *threadBackup = threadAddressSpace->backup;
+
+            for (i = 0; i < PageSize; i++)
+            {
+                threadBackup[vpn * PageSize + i] = machine->mainMemory[pageToBeReplaced * PageSize + i];
+            }
+
+            threadAddressSpace->KernelPageTable[vpn].backed = TRUE;
+        }
+
+        pageToBeOccupied = pageToBeReplaced;
+
+        threadAddressSpace->KernelPageTable[vpn].valid = FALSE;
+        threadAddressSpace->KernelPageTable[vpn].dirty = FALSE;
+    }
+
+    bzero(&machine->mainMemory[pageToBeOccupied * PageSize], PageSize);
+
+    physicalPagesList[pageToBeOccupied].threadPID = currentThread->GetPID();
+    physicalPagesList[pageToBeOccupied].virtualPage = virtualPage;
+    physicalPagesList[pageToBeOccupied].shared = FALSE;
+
+    return pageToBeOccupied;
+}
+/* ------------------------ CUSTOM ------------------------ */
+
+/* ------------------------ CUSTOM ------------------------ */
+unsigned int ProcessAddressSpace::GetRandomPage(int parentPagePhysicalNumber)
+{
+    int pageToBeReplaced = parentPagePhysicalNumber;
+
+    while (pageToBeReplaced == parentPagePhysicalNumber || physicalPagesList[pageToBeReplaced].shared == TRUE)
+    {
+        pageToBeReplaced = Random() % NumPhysPages;
+    }
+
+    return pageToBeReplaced;
 }
 /* ------------------------ CUSTOM ------------------------ */
 
 ProcessAddressSpace::~ProcessAddressSpace()
 {
+    int i, phyPage;
+    for (i = 0; i < numVirtualPages; i++)
+    {
+        if (KernelPageTable[i].valid)
+        {
+            phyPage = KernelPageTable[i].physicalPage;
+            if (!KernelPageTable[i].shared)
+            {
+                physicalPagesList[phyPage].virtualPage = -1;
+            }
+
+            physicalPagesList[phyPage].threadPID = -1;
+        }
+    }
+
     delete KernelPageTable;
+    delete backup;
 }
 
 void ProcessAddressSpace::InitUserModeCPURegisters()

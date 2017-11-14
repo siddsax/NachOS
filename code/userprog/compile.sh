@@ -1,22 +1,25 @@
-cd ../bin
+tput reset
+
+# cd ../bin
 # make 
 
-cd ../test
-make
+# cd ../test
+# make
 
-echo -e "\n\n\n\n\n"
+# echo -e "\n\n\n\n\n"
 
-cd ../threads
+# cd ../threads
 # make depend
 # echo -e "\n\n"
-make
+# make
 
-echo -e "\n\n\n\n\n"
+# echo -e "\n\n\n\n\n"
 
-cd ../userprog
+# cd ../userprog
 # make depend
 # echo -e "\n\n"
 make
 
 echo -e "\n\n" 
 
+./nachos -rs 0 -A 3 -x ../test/$1

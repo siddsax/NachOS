@@ -125,15 +125,12 @@ void ExceptionHandler(ExceptionType which)
     /* ------------------------ CUSTOM ------------------------ */
     else if ((which == PageFaultException))
     {
-        if (pageReplaceAlgo == 0)
-        {
-            printf("ERROR, fault without page demand");
-        }
+        ASSERT(pageReplaceAlgo != 0);
 
         IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
         int vpaddress = machine->ReadRegister(BadVAddrReg);
-        ASSERT(currentThread->space->DemandAllocation(vpaddress));
+        currentThread->space->DemandAllocation(vpaddress);
 
         currentThread->SortedInsertInWaitQueue(1000 + stats->totalTicks);
 
@@ -150,7 +147,6 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
     }
-    /* ------------------------ CUSTOM ------------------------ */
     else if ((which == SyscallException) && (type == SysCall_Fork))
     {
 
@@ -160,7 +156,7 @@ void ExceptionHandler(ExceptionType which)
 
         child = new NachOSThread("Forked thread", GET_NICE_FROM_PARENT);
 
-        child->space = new ProcessAddressSpace(currentThread->space);
+        child->space = new ProcessAddressSpace(currentThread->space, child->GetPID());
         child->SaveUserState();
         child->ResetReturnValue();
         child->CreateThreadStack(ForkStartFunction, 0);
@@ -168,6 +164,7 @@ void ExceptionHandler(ExceptionType which)
 
         machine->WriteRegister(2, child->GetPID());
     }
+    /* ------------------------ CUSTOM ------------------------ */
     else if ((which == SyscallException) && (type == SysCall_Yield))
     {
         currentThread->YieldCPU();
@@ -280,7 +277,6 @@ void ExceptionHandler(ExceptionType which)
         sleeptime = machine->ReadRegister(4);
         if (sleeptime == 0)
         {
-
             currentThread->YieldCPU();
         }
         else

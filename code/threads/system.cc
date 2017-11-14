@@ -45,6 +45,11 @@ extern void Cleanup();
 
 /* ------------------------ CUSTOM ------------------------ */
 int pageReplaceAlgo;
+
+int NumPhysPages;
+int MemorySize;
+
+PhysicalPagesList *physicalPagesList;
 /* ------------------------ CUSTOM ------------------------ */
 
 static void
@@ -86,6 +91,11 @@ void Initialize(int argc, char **argv)
 
     /* ------------------------ CUSTOM ------------------------ */
     pageReplaceAlgo = 1;
+
+    NumPhysPages = 15;
+    MemorySize = NumPhysPages * PageSize;
+
+    physicalPagesList = new PhysicalPagesList[NumPhysPages];
     /* ------------------------ CUSTOM ------------------------ */
 
     batchProcesses = new char *[MAX_BATCH_SIZE];

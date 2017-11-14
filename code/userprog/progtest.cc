@@ -38,10 +38,12 @@ void LaunchUserProcess(char *filename)
         return;
     }
 
-    space = new ProcessAddressSpace(executable);
+    space = new ProcessAddressSpace(executable, filename);
     currentThread->space = space;
 
+    /* ------------------------ CUSTOM ------------------------ */
     currentThread->space->fileName = filename;
+    /* ------------------------ CUSTOM ------------------------ */
 
     delete executable; // close file
 
@@ -174,7 +176,7 @@ void ReadInputAndFork(char *filename)
         }
         sprintf(buffer, "Thread_%d", i + 1);
         NachOSThread *child = new NachOSThread(buffer, priority[i]);
-        child->space = new ProcessAddressSpace(inFile);
+        child->space = new ProcessAddressSpace(inFile, batchProcesses[i]);
         delete inFile;
         child->space->InitUserModeCPURegisters(); // set the initial register values
         child->SaveUserState();

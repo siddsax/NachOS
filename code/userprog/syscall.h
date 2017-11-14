@@ -18,38 +18,38 @@
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */
-#define SysCall_Halt        0
-#define SysCall_Exit        1
-#define SysCall_Exec        2
-#define SysCall_Join        3
-#define SysCall_Create        4
-#define SysCall_Open        5
-#define SysCall_Read        6
-#define SysCall_Write        7
-#define SysCall_Close        8
-#define SysCall_Fork        9
-#define SysCall_Yield        10
+#define SysCall_Halt 0
+#define SysCall_Exit 1
+#define SysCall_Exec 2
+#define SysCall_Join 3
+#define SysCall_Create 4
+#define SysCall_Open 5
+#define SysCall_Read 6
+#define SysCall_Write 7
+#define SysCall_Close 8
+#define SysCall_Fork 9
+#define SysCall_Yield 10
 
 // New syscalls defined by Mainak
 
-#define SysCall_PrintInt    11
-#define SysCall_PrintChar    12
-#define SysCall_PrintString    13
-#define SysCall_GetReg        14
-#define SysCall_GetPA        15
-#define SysCall_GetPID        16
-#define SysCall_GetPPID        17
-#define SysCall_Sleep        18
-#define SysCall_Time        19
-#define SysCall_PrintIntHex    20
-#define SysCall_SemGet        21
-#define SysCall_SemOp        22
-#define SysCall_SemCtl        23
-#define SysCall_CondGet        24
-#define SysCall_CondOp        25
-#define SysCall_CondRemove    26
-#define SysCall_ShmAllocate    27
-#define SysCall_NumInstr        50
+#define SysCall_PrintInt 11
+#define SysCall_PrintChar 12
+#define SysCall_PrintString 13
+#define SysCall_GetReg 14
+#define SysCall_GetPA 15
+#define SysCall_GetPID 16
+#define SysCall_GetPPID 17
+#define SysCall_Sleep 18
+#define SysCall_Time 19
+#define SysCall_PrintIntHex 20
+#define SysCall_SemGet 21
+#define SysCall_SemOp 22
+#define SysCall_SemCtl 23
+#define SysCall_CondGet 24
+#define SysCall_CondOp 25
+#define SysCall_CondRemove 26
+#define SysCall_ShmAllocate 27
+#define SysCall_NumInstr 50
 
 #ifndef IN_ASM
 
@@ -65,7 +65,6 @@
 
 /* Stop Nachos, and print out performance stats */
 void syscall_wrapper_Halt();
-
 
 /* Address space control operations: Exit, Exec, and Join */
 
@@ -85,7 +84,6 @@ void syscall_wrapper_Exec(char *name);
  */
 int syscall_wrapper_Join(SpaceId id);
 
-
 /* File system operations: Create, Open, Read, Write, Close
  * These functions are patterned after UNIX -- files represent
  * both files *and* hardware I/O devices.
@@ -104,8 +102,8 @@ typedef int OpenFileId;
  * the console device.
  */
 
-#define ConsoleInput    0
-#define ConsoleOutput    1
+#define ConsoleInput 0
+#define ConsoleOutput 1
 
 /* Create a Nachos file, with "name" */
 void syscall_wrapper_Create(char *name);
@@ -128,8 +126,6 @@ int syscall_wrapper_Read(char *buffer, int size, OpenFileId id);
 
 /* Close the file, we're done reading and writing to it. */
 void syscall_wrapper_Close(OpenFileId id);
-
-
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program. 

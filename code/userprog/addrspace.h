@@ -9,9 +9,10 @@
 class ProcessAddressSpace
 {
 public:
-  ProcessAddressSpace(OpenFile *executable);
-
-  ProcessAddressSpace(ProcessAddressSpace *parentSpace);
+  /* ------------------------ CUSTOM ------------------------ */
+  ProcessAddressSpace(OpenFile *executable, char *filename);
+  ProcessAddressSpace(ProcessAddressSpace *parentSpace, int childPID);
+  /* ------------------------ CUSTOM ------------------------ */
 
   ~ProcessAddressSpace();
 
@@ -27,10 +28,14 @@ public:
   /* ------------------------ CUSTOM ------------------------ */
   unsigned int AllocateSharedMemory(int size);
 
-  unsigned int GetNextFreePage(int parentPage);
-  bool DemandAllocation(int vpaddress);
+  unsigned int GetPhysicalPage(int parentPage, int virtualPage);
+  void DemandAllocation(int vpaddress);
 
   char *fileName;
+
+  char *backup;
+
+  unsigned int GetRandomPage(int parentPagePhysicalNumber);
   /* ------------------------ CUSTOM ------------------------ */
 
 private:

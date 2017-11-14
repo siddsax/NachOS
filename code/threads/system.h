@@ -8,6 +8,7 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+#include "disk.h"
 
 #define MAX_THREAD_COUNT 1000
 #define MAX_BATCH_SIZE 100
@@ -53,7 +54,34 @@ extern int completionTimeArray[];
 extern bool excludeMainThread;
 
 /* ------------------------ CUSTOM ------------------------ */
+class PhysicalPagesList
+{
+public:
+  PhysicalPagesList()
+  {
+    virtualPage = -1;
+    shared = FALSE;
+    threadPID = -1;
+  }
+
+  int virtualPage;
+  int threadPID;
+  bool shared;
+};
+
 extern int pageReplaceAlgo;
+
+extern int NumPhysPages;
+extern int MemorySize;
+
+extern PhysicalPagesList *physicalPagesList;
+
+#define PageSize SectorSize
+
+#define RANDOM 1
+#define FIFO 2
+#define LRU 3
+#define LRUCLOCK 4
 /* ------------------------ CUSTOM ------------------------ */
 
 class TimeSortedWaitQueue

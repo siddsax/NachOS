@@ -6,27 +6,23 @@
 #include "translate.h"
 #include "disk.h"
 
-#define PageSize SectorSize
-
-#define NumPhysPages 1024
-#define MemorySize (NumPhysPages * PageSize)
 #define TLBSize 4
 
 enum ExceptionType
 {
-    NoException,
-    SyscallException,
-    PageFaultException,
-    ReadOnlyException,
+  NoException,
+  SyscallException,
+  PageFaultException,
+  ReadOnlyException,
 
-    BusErrorException,
+  BusErrorException,
 
-    AddressErrorException,
+  AddressErrorException,
 
-    OverflowException,
-    IllegalInstrException,
+  OverflowException,
+  IllegalInstrException,
 
-    NumExceptionTypes
+  NumExceptionTypes
 };
 
 #define StackReg 29
@@ -45,60 +41,60 @@ enum ExceptionType
 
 class Instruction
 {
-  public:
-    void Decode();
+public:
+  void Decode();
 
-    unsigned int value;
+  unsigned int value;
 
-    char opCode;
+  char opCode;
 
-    char rs, rt, rd;
-    int extra;
+  char rs, rt, rd;
+  int extra;
 };
 
 class Machine
 {
-  public:
-    Machine(bool debug);
+public:
+  Machine(bool debug);
 
-    ~Machine();
+  ~Machine();
 
-    void Run();
+  void Run();
 
-    int ReadRegister(int num);
+  int ReadRegister(int num);
 
-    void WriteRegister(int num, int value);
+  void WriteRegister(int num, int value);
 
-    void OneInstruction(Instruction *instr);
+  void OneInstruction(Instruction *instr);
 
-    void DelayedLoad(int nextReg, int nextVal);
+  void DelayedLoad(int nextReg, int nextVal);
 
-    bool ReadMem(int addr, int size, int *value);
+  bool ReadMem(int addr, int size, int *value);
 
-    bool WriteMem(int addr, int size, int value);
+  bool WriteMem(int addr, int size, int value);
 
-    ExceptionType Translate(int virtAddr, int *physAddr, int size, bool writing);
+  ExceptionType Translate(int virtAddr, int *physAddr, int size, bool writing);
 
-    int GetPA(unsigned vaddr);
+  int GetPA(unsigned vaddr);
 
-    void RaiseException(ExceptionType which, int badVAddr);
+  void RaiseException(ExceptionType which, int badVAddr);
 
-    void Debugger();
-    void DumpState();
+  void Debugger();
+  void DumpState();
 
-    char *mainMemory;
+  char *mainMemory;
 
-    int registers[NumTotalRegs];
+  int registers[NumTotalRegs];
 
-    TranslationEntry *tlb;
+  TranslationEntry *tlb;
 
-    TranslationEntry *KernelPageTable;
-    unsigned int KernelPageTableSize;
+  TranslationEntry *KernelPageTable;
+  unsigned int KernelPageTableSize;
 
-  private:
-    bool singleStep;
+private:
+  bool singleStep;
 
-    int runUntilTime;
+  int runUntilTime;
 };
 
 extern void ExceptionHandler(ExceptionType which);

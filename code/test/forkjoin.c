@@ -1,7 +1,7 @@
 #include "syscall.h"
 
-int
-main() {
+int main()
+{
     int x;
     int sleep_start, sleep_end;
 
