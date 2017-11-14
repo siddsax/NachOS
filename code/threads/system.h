@@ -80,10 +80,16 @@ extern unsigned numSharedPages;
 
 #define PageSize SectorSize
 
+extern int *FIFOArray;
+extern bool *referenceArray;
+extern int pointReference;
+
 #define RANDOM 1
 #define FIFO 2
 #define LRU 3
 #define LRUCLOCK 4
+
+#define INF 1000000007
 /* ------------------------ CUSTOM ------------------------ */
 
 class TimeSortedWaitQueue

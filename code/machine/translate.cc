@@ -265,6 +265,13 @@ Machine::Translate(int virtAddr, int *physAddr, int size, bool writing)
     *physAddr = pageFrame * PageSize + offset;
     ASSERT((*physAddr >= 0) && ((*physAddr + size) <= MemorySize));
     DEBUG('a', "phys addr = 0x%x\n", *physAddr);
+
+    /* ------------------------ CUSTOM ------------------------ */
+    if(pageReplaceAlgo == 4){
+        referenceArray[pageFrame] = TRUE;
+    }
+    /* ------------------------ CUSTOM ------------------------ */
+
     return NoException;
 }
 

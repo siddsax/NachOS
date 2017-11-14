@@ -52,6 +52,10 @@ int NumPhysPages;
 int MemorySize;
 
 PhysicalPagesList *physicalPagesList;
+
+int *FIFOArray;
+bool *referenceArray;
+int pointReference;
 /* ------------------------ CUSTOM ------------------------ */
 
 static void
@@ -94,12 +98,28 @@ void Initialize(int argc, char **argv)
     /* ------------------------ CUSTOM ------------------------ */
     numSharedPages = 0;
 
-    pageReplaceAlgo = 1;
+    pageReplaceAlgo = 4;
 
     NumPhysPages = 12;
     MemorySize = NumPhysPages * PageSize;
 
     physicalPagesList = new PhysicalPagesList[NumPhysPages];
+
+    if(pageReplaceAlgo == 2) { 
+
+        FIFOArray = new int[NumPhysPages]; 
+
+        for(int i=0 ; i<NumPhysPages ; i++) { FIFOArray[i] = INF; }
+    }
+
+    if(pageReplaceAlgo == 4) {
+
+        referenceArray = new bool[NumPhysPages];
+
+        for(int i=0 ; i<NumPhysPages ; i++) { referenceArray[i] = FALSE; }
+
+        pointReference = 0;
+    }
     /* ------------------------ CUSTOM ------------------------ */
 
     batchProcesses = new char *[MAX_BATCH_SIZE];

@@ -39,6 +39,9 @@ public:
   char *backup;
 
   unsigned int GetRandomPage(int parentPagePhysicalNumber);
+  unsigned int GetFirstPage(int parentPagePhysicalNumber);
+  unsigned int GetLRUPage(int parentPagePhysicalNumber);
+  unsigned int GetLRUCLOCKPage(int parentPagePhysicalNumber);
   /* ------------------------ CUSTOM ------------------------ */
 
 private:

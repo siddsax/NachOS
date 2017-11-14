@@ -232,6 +232,10 @@ unsigned int ProcessAddressSpace::AllocateSharedMemory(int size)
         newPageTable[i].readOnly = FALSE;
         newPageTable[i].shared = TRUE;
         newPageTable[i].backed = FALSE;
+
+        /* ------------------------ CUSTOM ------------------------ */
+        physicalPagesList[newPageTable[i].physicalPage].shared = TRUE;
+        /* ------------------------ CUSTOM ------------------------ */
     }
 
     delete KernelPageTable;
@@ -324,15 +328,15 @@ unsigned int ProcessAddressSpace::GetPhysicalPage(int parentPagePhysicalNumber, 
         case RANDOM:
             pageToBeReplaced = GetRandomPage(parentPagePhysicalNumber);
             break;
-        // case FIFO:
-        //     pageToBeReplaced = GetFirstPage(parentPagePhysicalNumber);
-        //     break;
+        case FIFO:
+            pageToBeReplaced = GetFirstPage(parentPagePhysicalNumber);
+            break;
         // case LRU:
         //     pageToBeReplaced = GetLRUPage(parentPagePhysicalNumber);
         //     break;
-        // case LRUCLOCK:
-        //     pageToBeReplaced = GetLRUCLOCKPage(parentPagePhysicalNumber);
-        //     break;
+        case LRUCLOCK:
+            pageToBeReplaced = GetLRUCLOCKPage(parentPagePhysicalNumber);
+            break;
         default:
             ASSERT(FALSE);
         }
@@ -369,6 +373,18 @@ unsigned int ProcessAddressSpace::GetPhysicalPage(int parentPagePhysicalNumber, 
     physicalPagesList[pageToBeOccupied].virtualPage = virtualPage;
     physicalPagesList[pageToBeOccupied].shared = FALSE;
 
+    /* ------------------------ CUSTOM ------------------------ */
+    if(pageReplaceAlgo == 2){
+        FIFOArray[pageToBeOccupied] = stats->totalTicks;
+    }
+    /* ------------------------ CUSTOM ------------------------ */
+
+    /* ------------------------ CUSTOM ------------------------ */
+    if(pageReplaceAlgo == 4){
+        referenceArray[pageToBeOccupied] = TRUE;
+    }
+    /* ------------------------ CUSTOM ------------------------ */
+
     return pageToBeOccupied;
 }
 /* ------------------------ CUSTOM ------------------------ */
@@ -381,6 +397,56 @@ unsigned int ProcessAddressSpace::GetRandomPage(int parentPagePhysicalNumber)
     while (pageToBeReplaced == parentPagePhysicalNumber || physicalPagesList[pageToBeReplaced].shared == TRUE)
     {
         pageToBeReplaced = Random() % NumPhysPages;
+    }
+
+    return pageToBeReplaced;
+}
+
+unsigned int ProcessAddressSpace::GetFirstPage(int parentPagePhysicalNumber)
+{
+    int pageToBeReplaced = -1, minTicks = INF;
+
+    for(int i=0 ; i<NumPhysPages ; i++)
+    {
+        if(i == parentPagePhysicalNumber || physicalPagesList[i].shared == TRUE || FIFOArray[i] == INF) { continue; }
+
+        if(FIFOArray[i] < minTicks)
+        {
+            minTicks = FIFOArray[i];
+            pageToBeReplaced = i;
+        }
+    }
+
+    return pageToBeReplaced;
+}
+
+unsigned int ProcessAddressSpace::GetLRUPage(int parentPagePhysicalNumber)
+{
+    return -1;
+}
+
+unsigned int ProcessAddressSpace::GetLRUCLOCKPage(int parentPagePhysicalNumber)
+{
+    int pageToBeReplaced = -1;
+
+    while(pageToBeReplaced == -1)
+    {
+        if(pointReference == parentPagePhysicalNumber || physicalPagesList[pointReference].shared == TRUE) { 
+            pointReference = (pointReference + 1) % NumPhysPages;
+            continue; 
+        }
+
+        if(referenceArray[pointReference] == TRUE)
+        { 
+            referenceArray[pointReference] = FALSE; 
+        }
+        else
+        {
+            pageToBeReplaced = pointReference;
+            break;
+        }
+
+        pointReference = (pointReference + 1) % NumPhysPages;
     }
 
     return pageToBeReplaced;
@@ -399,6 +465,11 @@ ProcessAddressSpace::~ProcessAddressSpace()
             {
                 physicalPagesList[phyPage].virtualPage = -1;
                 numPagesAllocated--;
+                /* ------------------------ CUSTOM ------------------------ */
+                if(pageReplaceAlgo == 2){
+                    FIFOArray[phyPage] = INF;
+                }
+                /* ------------------------ CUSTOM ------------------------ */
             }
 
             physicalPagesList[phyPage].threadPID = -1;
