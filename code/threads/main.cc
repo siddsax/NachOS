@@ -1,4 +1,4 @@
-// main.cc 
+// main.cc
 //	Bootstrap code to initialize the operating system kernel.
 //
 //	Allows direct calls into internal operating system functions,
@@ -31,7 +31,7 @@
 //    -p prints a Nachos file to stdout
 //    -r removes a Nachos file from the file system
 //    -l lists the contents of the Nachos directory
-//    -D prints the contents of the entire file system 
+//    -D prints the contents of the entire file system
 //    -t tests the performance of the Nachos file system
 //
 //  NETWORK
@@ -43,7 +43,7 @@
 //  Some of the flags are interpreted here; some in system.cc.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #define MAIN
@@ -54,7 +54,6 @@
 
 #include "utility.h"
 #include "system.h"
-
 
 // External functions used by this file
 
@@ -70,27 +69,27 @@ extern void ReadInputAndFork(char *file);
 
 //----------------------------------------------------------------------
 // main
-// 	Bootstrap the operating system kernel.  
-//	
+// 	Bootstrap the operating system kernel.
+//
 //	Check command line arguments
 //	Initialize data structures
 //	(optionally) Call test procedure
 //
 //	"argc" is the number of command line arguments (including the name
-//		of the command) -- ex: "nachos -d +" -> argc = 3 
+//		of the command) -- ex: "nachos -d +" -> argc = 3
 //	"argv" is an array of strings, one for each command line argument
 //		ex: "nachos -d +" -> argv = {"nachos", "-d", "+"}
 //----------------------------------------------------------------------
 
-int
-main(int argc, char **argv) {
-    int argCount;            // the number of arguments
+int main(int argc, char **argv)
+{
+    int argCount; // the number of arguments
     // for a particular command
 
     int schedPriority = MAX_NICE_PRIORITY;
 
     DEBUG('t', "Entering main");
-    (void) Initialize(argc, argv);
+    (void)Initialize(argc, argv);
 
 #ifdef THREADS
     ThreadTest();
@@ -99,83 +98,107 @@ main(int argc, char **argv) {
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount)
     {
         argCount = 1;
-        if (!strcmp(*argv, "-z"))               // print copyright
+        if (!strcmp(*argv, "-z")) // print copyright
             printf(copyright);
 #ifdef USER_PROGRAM
-        if (!strcmp(*argv, "-A")) {		// read scheduling algorithm
-           schedulingAlgo = atoi(*(argv + 1));
-           argCount = 2;
-           ASSERT((schedulingAlgo > 0) && (schedulingAlgo <= 4));
-           if ((schedulingAlgo == ROUND_ROBIN) || (schedulingAlgo == UNIX_SCHED)) {
-              ASSERT (SCHED_QUANTUM > 0);
-           }
-           if (schedulingAlgo == UNIX_SCHED) {
-              currentThread->SetBasePriority(schedPriority+DEFAULT_BASE_PRIORITY);
-              currentThread->SetPriority(schedPriority+DEFAULT_BASE_PRIORITY);
-              currentThread->SetUsage(0);
-           }
-        } else if (!strcmp(*argv, "-P")) {
+        if (!strcmp(*argv, "-A"))
+        { // read scheduling algorithm
+            schedulingAlgo = atoi(*(argv + 1));
+            argCount = 2;
+            ASSERT((schedulingAlgo > 0) && (schedulingAlgo <= 4));
+            if ((schedulingAlgo == ROUND_ROBIN) || (schedulingAlgo == UNIX_SCHED))
+            {
+                ASSERT(SCHED_QUANTUM > 0);
+            }
+            if (schedulingAlgo == UNIX_SCHED)
+            {
+                currentThread->SetBasePriority(schedPriority + DEFAULT_BASE_PRIORITY);
+                currentThread->SetPriority(schedPriority + DEFAULT_BASE_PRIORITY);
+                currentThread->SetUsage(0);
+            }
+        }
+        else if (!strcmp(*argv, "-P"))
+        {
             schedPriority = atoi(*(argv + 1));
             argCount = 2;
             ASSERT((schedPriority >= 0) && (schedPriority <= 100));
-            currentThread->SetBasePriority(schedPriority+DEFAULT_BASE_PRIORITY);
-            currentThread->SetPriority(schedPriority+DEFAULT_BASE_PRIORITY);
+            currentThread->SetBasePriority(schedPriority + DEFAULT_BASE_PRIORITY);
+            currentThread->SetPriority(schedPriority + DEFAULT_BASE_PRIORITY);
             currentThread->SetUsage(0);
-        } else if (!strcmp(*argv, "-x")) {        	// run a user program
-        ASSERT(argc > 1);
+        }
+        else if (!strcmp(*argv, "-x"))
+        { // run a user program
+            ASSERT(argc > 1);
             LaunchUserProcess(*(argv + 1));
             argCount = 2;
-        } else if (!strcmp(*argv, "-c")) {      // test the console
-        if (argc == 1)
-            ConsoleTest(NULL, NULL);
-        else {
-        ASSERT(argc > 2);
-            ConsoleTest(*(argv + 1), *(argv + 2));
-            argCount = 3;
         }
-        interrupt->Halt();		// once we start the console, then
-                    // Nachos will loop forever waiting
-                    // for console input
-    } else if (!strcmp(*argv, "-F")) {	// test multiprogramming
-            ASSERT (argc > 1);
+        else if (!strcmp(*argv, "-c"))
+        { // test the console
+            if (argc == 1)
+                ConsoleTest(NULL, NULL);
+            else
+            {
+                ASSERT(argc > 2);
+                ConsoleTest(*(argv + 1), *(argv + 2));
+                argCount = 3;
+            }
+            interrupt->Halt(); // once we start the console, then
+                               // Nachos will loop forever waiting
+                               // for console input
+        }
+        else if (!strcmp(*argv, "-F"))
+        { // test multiprogramming
+            ASSERT(argc > 1);
             ReadInputAndFork(*(argv + 1));
             argCount = 2;
         }
 #endif // USER_PROGRAM
 #ifdef FILESYS
-        if (!strcmp(*argv, "-cp")) { 		// copy from UNIX to Nachos
+        if (!strcmp(*argv, "-cp"))
+        { // copy from UNIX to Nachos
             ASSERT(argc > 2);
             Copy(*(argv + 1), *(argv + 2));
             argCount = 3;
-        } else if (!strcmp(*argv, "-p")) {	// print a Nachos file
+        }
+        else if (!strcmp(*argv, "-p"))
+        { // print a Nachos file
             ASSERT(argc > 1);
             Print(*(argv + 1));
             argCount = 2;
-        } else if (!strcmp(*argv, "-r")) {	// remove Nachos file
+        }
+        else if (!strcmp(*argv, "-r"))
+        { // remove Nachos file
             ASSERT(argc > 1);
             fileSystem->Remove(*(argv + 1));
             argCount = 2;
-        } else if (!strcmp(*argv, "-l")) {	// list Nachos directory
-                fileSystem->List();
-        } else if (!strcmp(*argv, "-D")) {	// print entire filesystem
-                fileSystem->Print();
-        } else if (!strcmp(*argv, "-t")) {	// performance test
-                PerformanceTest();
+        }
+        else if (!strcmp(*argv, "-l"))
+        { // list Nachos directory
+            fileSystem->List();
+        }
+        else if (!strcmp(*argv, "-D"))
+        { // print entire filesystem
+            fileSystem->Print();
+        }
+        else if (!strcmp(*argv, "-t"))
+        { // performance test
+            PerformanceTest();
         }
 #endif // FILESYS
 #ifdef NETWORK
-        if (!strcmp(*argv, "-o")) {
-        ASSERT(argc > 1);
-            Delay(2); 				// delay for 2 seconds
-                        // to give the user time to
-                        // start up another nachos
+        if (!strcmp(*argv, "-o"))
+        {
+            ASSERT(argc > 1);
+            Delay(2); // delay for 2 seconds
+                      // to give the user time to
+                      // start up another nachos
             MailTest(atoi(*(argv + 1)));
             argCount = 2;
         }
 #endif // NETWORK
     }
 
-    currentThread->FinishThread();    // NOTE: if the procedure "main"
+    currentThread->FinishThread(); // NOTE: if the procedure "main"
     // returns, then the program "nachos"
     // will exit (as any other normal program
     // would).  But there may be other
@@ -183,5 +206,5 @@ main(int argc, char **argv) {
     // to those threads by saying that the
     // "main" thread is finished, preventing
     // it from returning.
-    return (0);            // Not reached...
+    return (0); // Not reached...
 }

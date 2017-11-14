@@ -154,7 +154,10 @@ void ExceptionHandler(ExceptionType which)
         machine->WriteRegister(PCReg, machine->ReadRegister(NextPCReg));
         machine->WriteRegister(NextPCReg, machine->ReadRegister(NextPCReg) + 4);
 
+        IntStatus oldLevel = interrupt->SetLevel(IntOff);
+
         child = new NachOSThread("Forked thread", GET_NICE_FROM_PARENT);
+        printf("\n>>>>>>>>>> CALLING FORK FROM THREAD: %d TO THREAD %d\n", currentThread->GetPID(), child->GetPID());
 
         child->space = new ProcessAddressSpace(currentThread->space);
         child->space->InitiateForkedProcessAddressSpace(currentThread->space, child->GetPID());
@@ -164,6 +167,8 @@ void ExceptionHandler(ExceptionType which)
         child->Schedule();
 
         machine->WriteRegister(2, child->GetPID());
+
+        (void)interrupt->SetLevel(oldLevel);
     }
     /* ------------------------ CUSTOM ------------------------ */
     else if ((which == SyscallException) && (type == SysCall_Yield))

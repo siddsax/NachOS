@@ -5,7 +5,7 @@
 int main()
 {
     int *array = (int *)syscall_wrapper_ShmAllocate(2 * sizeof(int));
-    int x, i;
+    int x, i, y;
 
     array[0] = 0;
     array[1] = 100;
@@ -14,9 +14,16 @@ int main()
     if (x == 0)
     {
         array[0] = 20;
+        y = syscall_wrapper_Fork();
         for (i = 0; i < NUM_ITER; i++)
         {
             array[0]++;
+        }
+        syscall_wrapper_PrintString("Child Array value = ");
+        syscall_wrapper_PrintInt(array[0]);
+        if (y != 0)
+        {
+            syscall_wrapper_Join(y);
         }
     }
     else
