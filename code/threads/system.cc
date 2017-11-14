@@ -98,7 +98,21 @@ void Initialize(int argc, char **argv)
 
     pageReplaceAlgo = 1;
 
-    NumPhysPages = 10;
+    switch (pageReplaceAlgo)
+    {
+    case 1:
+        NumPhysPages = 13;
+        break;
+    case 2:
+        NumPhysPages = 10;
+        break;
+    case 3:
+        NumPhysPages = 12;
+        break;
+    default:
+        NumPhysPages = 1024;
+    }
+
     MemorySize = NumPhysPages * PageSize;
 
     physicalPagesList = new PhysicalPagesList[NumPhysPages];
